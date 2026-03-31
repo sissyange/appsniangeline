@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', Arial, sans-serif;
+    background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(255, 245, 238, 0.95);
+    padding: 50px 40px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 25px 80px rgba(93, 64, 55, 0.2),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.logo-icon i {
+    font-size: 36px;
+    color: white;
+}
+
+h2 {
+    color: #5D4037;
+    margin-bottom: 8px;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    color: #8B4513;
+    margin-bottom: 35px;
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.user-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.user-btn {
+    width: 100%;
+    padding: 20px 25px;
+    border: 2px solid #E8D5C4;
+    border-radius: 16px;
+    background: white;
+    color: #5D4037;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+}
+
+.user-btn:hover::before {
+    left: 100%;
+}
+
+.user-btn:hover {
+    border-color: #8B4513;
+    background: #FFF8F0;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(139, 69, 19, 0.15);
+}
+
+.user-btn:active {
+    transform: translateY(-1px);
+}
+
+.user-btn i {
+    font-size: 24px;
+    color: #8B4513;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FAD8C1;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.user-btn:hover i {
+    background: #8B4513;
+    color: white;
+    transform: scale(1.1);
+}
+
+.user-btn .arrow {
+    margin-left: auto;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    color: #8B4513;
+}
+
+.user-btn:hover .arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.user-btn .text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-btn .label {
+    font-size: 17px;
+    font-weight: 600;
+    color: #5D4037;
+}
+
+.user-btn .desc {
+    font-size: 13px;
+    color: #8B4513;
+    opacity: 0.7;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* About Me Section */
+.about-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(139, 69, 19, 0.1) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(139, 69, 19, 0.15);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.about-section:hover {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.08) 0%, rgba(139, 69, 19, 0.15) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.1);
+}
+
+.about-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.about-content {
+    flex: 1;
+}
+
+.about-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #5D4037;
+    margin-bottom: 4px;
+}
+
+.about-text {
+    font-size: 13px;
+    color: #8B4513;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.about-arrow {
+    color: #8B4513;
+    font-size: 18px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.about-section:hover .about-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.divider {
+    margin: 25px 0;
+    position: relative;
+    text-align: center;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4A574, transparent);
+}
+
+.divider span {
+    background: rgba(255, 245, 238, 0.95);
+    padding: 0 15px;
+    color: #8B4513;
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+}
+
+.footer-text {
+    margin-top: 30px;
+    color: #8B4513;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .container {
+        padding: 40px 25px;
+        border-radius: 20px;
+    }
+    
+    h2 {
+        font-size: 28px;
+    }
+    
+    .user-btn {
+        padding: 18px 20px;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo-icon">
+        <i class="fas fa-heart-pulse"></i>
+    </div>
+
+    <h2>CampusCare+</h2>
+    <p class="subtitle">Student Clinic Mobile Application</p>
+
+    <div class="user-options">
+        <button class="user-btn" onclick="student()">
+            <i class="fas fa-user-graduate"></i>
+            <div class="text-group">
+                <span class="label">Student</span>
+                <span class="desc">Access health records & appointments</span>
+            </div>
+            <i class="fas fa-chevron-right arrow"></i>
+        </button>
+
+        <button class="user-btn" onclick="staff()">
+            <i class="fas fa-user-md"></i>
+            <div class="text-group">
+                <span class="label">Staff</span>
+                <span class="desc">Manage clinic operations</span>
+            </div>
+            <i class="fas fa-chevron-right arrow"></i>
+        </button>
+    </div>
+
+    <!-- About Me Section -->
+    <div class="about-section" onclick="aboutMe()">
+        <div class="about-icon">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="about-content">
+            <div class="about-title">About Me</div>
+            <div class="about-text">
+                Learn more about the developer behind CampusCare+ and the journey of creating this health management system.
+            </div>
+        </div>
+        <i class="fas fa-chevron-right about-arrow"></i>
+    </div>
+
+    <div class="divider">
+        <span>HEALTH MANAGEMENT SYSTEM</span>
+    </div>
+
+    <p class="footer-text">© 2024 CampusCare+</p>
+
+</div>
+
+<script>
+function student(){
+    window.location.href = "student-login.html";
+}
+
+function staff(){
+    window.location.href = "staff-login.html";
+}
+
+function aboutMe(){
+    window.location.href = "about-me.html";
+}
+
+// Add keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (e.key === '1') student();
+    if (e.key === '2') staff();
+    if (e.key === '3') aboutMe();
+});
+</script>
+
+</body>
+</html>

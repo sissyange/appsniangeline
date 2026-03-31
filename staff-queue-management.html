@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Queue Management - Staff | CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F4C2A1 0%, #D4A574 100%); min-height: 100vh; }
+
+/* Header */
+.header { background: rgba(255,245,238,0.95); color: #5D4037; padding: 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(93,64,55,0.15); }
+.header h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.back-btn { background: none; border: none; color: #8B4513; font-size: 20px; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; transition: all 0.3s; }
+.back-btn:hover { background: rgba(139,69,19,0.1); }
+
+/* Container */
+.container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+/* Stats Bar */
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+.stat-box { background: rgba(255,255,255,0.95); padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(93,64,55,0.1); }
+.stat-number { font-size: 32px; font-weight: 700; color: #5D4037; }
+.stat-label { font-size: 12px; color: #8B4513; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+
+/* Cancelled Stat */
+.stat-box.cancelled-stat { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); }
+.stat-box.cancelled-stat .stat-number { color: #c62828; }
+.stat-box.cancelled-stat .stat-label { color: #c62828; }
+
+/* Section Tabs */
+.section-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
+.section-tab { padding: 12px 24px; background: rgba(255,255,255,0.9); border: 2px solid transparent; border-radius: 25px; cursor: pointer; font-weight: 600; color: #5D4037; transition: all 0.3s; white-space: nowrap; }
+.section-tab:hover { border-color: #8B4513; }
+.section-tab.active { background: #8B4513; color: white; }
+.section-tab.cancelled-tab { position: relative; }
+.section-tab.cancelled-tab.has-new::after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #f44336; border-radius: 50%; animation: pulse 2s infinite; }
+
+/* Content Sections */
+.content-section { display: none; }
+.content-section.active { display: block; }
+
+/* Patient Cards */
+.patient-list { display: flex; flex-direction: column; gap: 15px; }
+.patient-card { background: rgba(255,255,255,0.95); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(93,64,55,0.1); border-left: 4px solid #8B4513; transition: all 0.3s; }
+.patient-card:hover { transform: translateX(5px); box-shadow: 0 6px 20px rgba(93,64,55,0.15); }
+.patient-card.in-queue { border-left-color: #4CAF50; }
+.patient-card.serving { border-left-color: #2196F3; }
+.patient-card.finished { border-left-color: #9E9E9E; opacity: 0.7; }
+.patient-card.cancelled { border-left-color: #f44336; opacity: 0.6; background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,235,238,0.3) 100%); }
+.patient-card.cancelled .patient-details h4 { text-decoration: line-through; color: #999; }
+
+.patient-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+.patient-info { display: flex; align-items: center; gap: 12px; }
+.patient-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+.patient-avatar.cancelled { background: linear-gradient(135deg, #f44336 0%, #c62828 100%); }
+.patient-details h4 { font-size: 17px; color: #5D4037; font-weight: 700; }
+.patient-details p { font-size: 13px; color: #8B4513; }
+
+.patient-meta { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+.queue-number { font-size: 28px; font-weight: 700; color: #4CAF50; }
+.queue-number.pending { color: #FF9800; }
+.queue-number.cancelled { color: #f44336; text-decoration: line-through; }
+
+.status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.status-badge.reserved { background: #FFF3E0; color: #F57C00; }
+.status-badge.waiting { background: #E8F5E9; color: #388E3C; }
+.status-badge.serving { background: #E3F2FD; color: #1976D2; }
+.status-badge.finished { background: #ECEFF1; color: #546E7A; }
+.status-badge.cancelled { background: #FFEBEE; color: #C62828; animation: pulse 2s infinite; }
+.status-badge.cancelled-by-student { background: #FFEBEE; color: #C62828; border: 1px solid #ef9a9a; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+.complaint-box { background: #FFF8F0; padding: 12px; border-radius: 10px; margin: 15px 0; color: #5D4037; font-size: 14px; }
+.complaint-box.cancelled { background: #FFEBEE; color: #c62828; }
+
+.cancelled-reason { margin-top: 10px; padding: 10px; background: rgba(244,67,54,0.1); border-radius: 8px; border-left: 3px solid #f44336; font-size: 13px; color: #c62828; }
+.cancelled-reason strong { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+
+/* Action Buttons */
+.action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-add { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); color: white; }
+.btn-serve { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; }
+.btn-complete { background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); color: white; }
+.btn-skip { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; }
+.btn-remove { background: linear-gradient(135deg, #f44336 0%, #C62828 100%); color: white; }
+.btn-restore { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); color: white; }
+
+/* Now Serving Section */
+.now-serving { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 8px 25px rgba(33,150,243,0.3); }
+.now-serving h3 { font-size: 16px; opacity: 0.9; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.now-serving .serving-number { font-size: 48px; font-weight: 700; margin-bottom: 10px; }
+.now-serving .serving-name { font-size: 20px; font-weight: 600; }
+
+/* Cancelled Alert */
+.cancelled-alert { background: linear-gradient(135deg, #f44336 0%, #c62828 100%); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: none; align-items: center; gap: 12px; animation: slideDown 0.3s ease; box-shadow: 0 4px 15px rgba(244,67,54,0.3); }
+.cancelled-alert.active { display: flex; }
+.cancelled-alert i { font-size: 24px; animation: shake 0.5s ease infinite; }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+.cancelled-alert-content { flex: 1; }
+.cancelled-alert-title { font-weight: 700; margin-bottom: 3px; }
+.cancelled-alert-text { font-size: 13px; opacity: 0.9; }
+.cancelled-alert-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.cancelled-alert-close:hover { background: rgba(255,255,255,0.3); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 60px 20px; color: #8B4513; opacity: 0.7; }
+.empty-state i { font-size: 64px; margin-bottom: 20px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: #4CAF50; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); display: none; align-items: center; gap: 10px; font-weight: 600; z-index: 400; animation: slideIn 0.3s ease; }
+.toast.active { display: flex; }
+.toast.error { background: #f44336; }
+.toast.warning { background: #FF9800; }
+
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .patient-header { flex-direction: column; align-items: flex-start; }
+    .patient-meta { align-items: flex-start; }
+    .action-buttons { width: 100%; }
+    .btn { flex: 1; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="goTo('staff-dashboard.html')">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    <h2><i class="fas fa-users" style="color: #8B4513;"></i> Queue Management</h2>
+    <div style="width: 40px;"></div>
+</div>
+
+<div class="container">
+
+    <!-- Cancelled Alert -->
+    <div class="cancelled-alert" id="cancelledAlert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div class="cancelled-alert-content">
+            <div class="cancelled-alert-title">Student Cancelled Appointment</div>
+            <div class="cancelled-alert-text" id="cancelledAlertText">A student has cancelled their queue/appointment.</div>
+        </div>
+        <button class="cancelled-alert-close" onclick="dismissCancelledAlert()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Now Serving -->
+    <div class="now-serving" id="nowServingSection" style="display: none;">
+        <h3><i class="fas fa-stethoscope"></i> Now Serving</h3>
+        <div class="serving-number" id="servingNumber">-</div>
+        <div class="serving-name" id="servingName">-</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-box">
+            <div class="stat-number" id="reservedCount">0</div>
+            <div class="stat-label">Reserved</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="waitingCount">0</div>
+            <div class="stat-label">Waiting</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="servingCount">0</div>
+            <div class="stat-label">Serving</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="completedCount">0</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-box cancelled-stat" id="cancelledStatBox" style="display: none;">
+            <div class="stat-number" id="cancelledCount">0</div>
+            <div class="stat-label">Cancelled</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="section-tabs">
+        <div class="section-tab active" onclick="switchTab('reserved', this)">
+            <i class="fas fa-bookmark"></i> Reserved
+        </div>
+        <div class="section-tab" onclick="switchTab('waiting', this)">
+            <i class="fas fa-clock"></i> Waiting
+        </div>
+        <div class="section-tab" onclick="switchTab('serving', this)">
+            <i class="fas fa-stethoscope"></i> Serving
+        </div>
+        <div class="section-tab" onclick="switchTab('completed', this)">
+            <i class="fas fa-check"></i> Completed
+        </div>
+        <div class="section-tab cancelled-tab" onclick="switchTab('cancelled', this)" id="cancelledTab">
+            <i class="fas fa-times-circle"></i> Cancelled
+        </div>
+    </div>
+
+    <!-- Reserved Section -->
+    <div class="content-section active" id="reservedSection">
+        <div class="patient-list" id="reservedList">
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No Reserved Patients</h3>
+                <p>Students with accepted appointments will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waiting Section -->
+    <div class="content-section" id="waitingSection">
+        <div class="patient-list" id="waitingList">
+            <div class="empty-state">
+                <i class="fas fa-hourglass-half"></i>
+                <h3>No Waiting Patients</h3>
+                <p>Add patients from reserved to start the queue.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Serving Section -->
+    <div class="content-section" id="servingSection">
+        <div class="patient-list" id="servingList">
+            <div class="empty-state">
+                <i class="fas fa-user-md"></i>
+                <h3>No Patient Being Served</h3>
+                <p>Click "Serve Now" to start serving a patient.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Section -->
+    <div class="content-section" id="completedSection">
+        <div class="patient-list" id="completedList">
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h3>No Completed Patients</h3>
+                <p>Completed consultations will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancelled Section -->
+    <div class="content-section" id="cancelledSection">
+        <div class="patient-list" id="cancelledList">
+            <div class="empty-state">
+                <i class="fas fa-times-circle"></i>
+                <h3>No Cancelled Appointments</h3>
+                <p>Cancelled appointments will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Success!</span></div>
+
+<script>
+// Global variables
+let loggedStaff = JSON.parse(localStorage.getItem("loggedStaff")) || { name: "Admin", role: "Administrator" };
+let currentTab = 'reserved';
+let nextQueueNumber = 1;
+
+// Initialize
+function init() {
+    console.log("Initializing Queue Management...");
+    
+    // Setup storage listeners for real-time sync
+    setupStorageListeners();
+    
+    // Initial load
+    updateStats();
+    loadPatients();
+    syncCancelledAppointments();
+    
+    // Check for existing serving
+    let servingNow = localStorage.getItem("servingNow");
+    let servingId = localStorage.getItem("servingId");
+    
+    if (servingNow && servingNow !== "0" && servingId) {
+        updateNowServingDisplay(servingNow, servingId);
+    }
+    
+    // Periodic sync every 3 seconds
+    setInterval(() => {
+        syncCancelledAppointments();
+    }, 3000);
+}
+
+// Setup storage listeners for cross-tab communication
+function setupStorageListeners() {
+    window.addEventListener('storage', (e) => {
+        console.log("Storage event detected:", e.key);
+        
+        if (e.key === 'cancelledQueueItems') {
+            // Student cancelled appointment
+            handleStudentCancellation();
+        }
+        else if (e.key === 'queue' || e.key === 'appointments') {
+            updateStats();
+            loadPatients();
+        }
+        else if (e.key === 'servingNow') {
+            let servingNow = localStorage.getItem("servingNow");
+            let servingId = localStorage.getItem("servingId");
+            if (servingNow && servingNow !== "0" && servingId) {
+                updateNowServingDisplay(servingNow, servingId);
+            } else {
+                document.getElementById("nowServingSection").style.display = "none";
+            }
+        }
+    });
+}
+
+// Handle student cancellation from queue-status.html
+function handleStudentCancellation() {
+    let cancelledItems = JSON.parse(localStorage.getItem("cancelledQueueItems")) || [];
+    
+    if (cancelledItems.length === 0) return;
+    
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let newCancellations = [];
+    
+    cancelledItems.forEach(cancelled => {
+        // Check if already processed
+        if (cancelled.processedByStaff) return;
+        
+        // Find in queue
+        let queueIndex = queue.findIndex(q => {
+            return (q.id && q.id.toString() === cancelled.id) ||
+                   (q.appointmentId && q.appointmentId.toString() === cancelled.id) ||
+                   (q.studentId === cancelled.studentId && q.date === today);
+        });
+        
+        if (queueIndex !== -1) {
+            let patient = queue[queueIndex];
+            
+            // If currently serving, alert staff immediately
+            if (patient.status === 'serving') {
+                showCancelledAlert(`${patient.studentName} cancelled while being served!`);
+                showToast(`WARNING: ${patient.studentName} cancelled during service!`, true);
+            } else {
+                showCancelledAlert(`${patient.studentName} cancelled their appointment.`);
+            }
+            
+            // Move to cancelled status or remove from queue
+            if (patient.status === 'reserved' || patient.status === 'waiting') {
+                // Change status to cancelled instead of removing (for record purposes)
+                patient.status = 'cancelled';
+                patient.cancelledAt = new Date().toISOString();
+                patient.cancelledBy = 'student';
+                patient.cancellationReason = cancelled.reason || 'Cancelled by student';
+                newCancellations.push(patient);
+            }
+            
+            // Mark as processed
+            cancelled.processedByStaff = true;
+            
+            // Create staff notification
+            createStaffNotification(patient, 'cancelled_by_student');
+        }
+    });
+    
+    // Save updated queue
+    localStorage.setItem("queue", JSON.stringify(queue));
+    
+    // Save updated cancelled items back
+    localStorage.setItem("cancelledQueueItems", JSON.stringify(cancelledItems));
+    
+    // Refresh display
+    updateStats();
+    loadPatients();
+    
+    // If currently viewing another tab, highlight cancelled tab
+    if (currentTab !== 'cancelled' && newCancellations.length > 0) {
+        document.getElementById('cancelledTab').classList.add('has-new');
+    }
+}
+
+// Sync cancelled appointments (backup check)
+function syncCancelledAppointments() {
+    let cancelledItems = JSON.parse(localStorage.getItem("cancelledQueueItems")) || [];
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let hasChanges = false;
+    
+    cancelledItems.forEach(cancelled => {
+        if (cancelled.processedByStaff) return;
+        
+        let queueItem = queue.find(q => {
+            return (q.id && q.id.toString() === cancelled.id) ||
+                   (q.appointmentId && q.appointmentId.toString() === cancelled.id);
+        });
+        
+        if (queueItem && queueItem.status !== 'cancelled') {
+            queueItem.status = 'cancelled';
+            queueItem.cancelledAt = new Date().toISOString();
+            queueItem.cancelledBy = 'student';
+            queueItem.cancellationReason = cancelled.reason || 'Cancelled by student';
+            hasChanges = true;
+            
+            cancelled.processedByStaff = true;
+        }
+    });
+    
+    if (hasChanges) {
+        localStorage.setItem("queue", JSON.stringify(queue));
+        localStorage.setItem("cancelledQueueItems", JSON.stringify(cancelledItems));
+        updateStats();
+        loadPatients();
+    }
+}
+
+// Show cancelled alert banner
+function showCancelledAlert(message) {
+    let alert = document.getElementById("cancelledAlert");
+    document.getElementById("cancelledAlertText").textContent = message;
+    alert.classList.add("active");
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        dismissCancelledAlert();
+    }, 10000);
+}
+
+function dismissCancelledAlert() {
+    document.getElementById("cancelledAlert").classList.remove("active");
+}
+
+// Create notification for staff
+function createStaffNotification(patient, type) {
+    let notifications = JSON.parse(localStorage.getItem("staffNotifications")) || [];
+    
+    let notif = {
+        id: Date.now(),
+        type: type,
+        title: type === 'cancelled_by_student' ? '⚠️ Student Cancelled' : 'Notification',
+        message: `${patient.studentName} has cancelled their ${patient.status === 'serving' ? 'ongoing ' : ''}appointment.`,
+        patientName: patient.studentName,
+        studentId: patient.studentId,
+        timestamp: new Date().toISOString(),
+        read: false,
+        priority: patient.status === 'serving' ? 'high' : 'normal'
+    };
+    
+    notifications.unshift(notif);
+    localStorage.setItem("staffNotifications", JSON.stringify(notifications));
+}
+
+// Navigation
+function goTo(url) {
+    window.location.href = url;
+}
+
+// Toast notification
+function showToast(msg, isError = false) {
+    let t = document.getElementById("toast");
+    document.getElementById("toastMsg").textContent = msg;
+    t.className = isError ? "toast error active" : "toast active";
+    if (!isError) {
+        setTimeout(() => t.classList.remove("active"), 3000);
+    } else {
+        setTimeout(() => t.classList.remove("active"), 5000);
+    }
+}
+
+// Switch tabs
+function switchTab(tab, element) {
+    currentTab = tab;
+    
+    // Update tab styles
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    element.classList.remove('has-new');
+    element.classList.add('active');
+    
+    // Show/hide sections
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tab + 'Section').classList.add('active');
+    
+    loadPatients();
+}
+
+// Update statistics
+function updateStats() {
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let todayQueue = queue.filter(q => q.date === today);
+    
+    document.getElementById("reservedCount").textContent = todayQueue.filter(q => q.status === 'reserved').length;
+    document.getElementById("waitingCount").textContent = todayQueue.filter(q => q.status === 'waiting').length;
+    document.getElementById("servingCount").textContent = todayQueue.filter(q => q.status === 'serving').length;
+    // FIX: Count 'finished' status instead of 'completed' to avoid health record sync
+    document.getElementById("completedCount").textContent = todayQueue.filter(q => q.status === 'finished').length;
+    
+    // Show cancelled count
+    let cancelledCount = todayQueue.filter(q => q.status === 'cancelled').length;
+    if (cancelledCount > 0) {
+        document.getElementById("cancelledStatBox").style.display = "block";
+        document.getElementById("cancelledCount").textContent = cancelledCount;
+    } else {
+        document.getElementById("cancelledStatBox").style.display = "none";
+    }
+    
+    // Update next queue number
+    let waiting = todayQueue.filter(q => q.status === 'waiting' || q.status === 'serving');
+    let maxNum = Math.max(...waiting.map(q => q.queueNumber || 0), 0);
+    nextQueueNumber = maxNum + 1;
+}
+
+// Load patients based on current tab
+function loadPatients() {
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    // FIX: Map tab names to status values (completed tab shows 'finished' status)
+    const tabStatusMap = {
+        'reserved': 'reserved',
+        'waiting': 'waiting',
+        'serving': 'serving',
+        'completed': 'finished',  // Tab 'completed' shows status 'finished'
+        'cancelled': 'cancelled'
+    };
+    
+    let targetStatus = tabStatusMap[currentTab] || currentTab;
+    
+    // Filter for today's queue with current status
+    let todayQueue = queue.filter(q => {
+        let dateMatch = q.date === today;
+        let statusMatch = q.status === targetStatus;
+        let hasStudent = q.studentId && q.studentName;
+        return dateMatch && statusMatch && hasStudent;
+    });
+    
+    let container = document.getElementById(currentTab + 'List');
+    
+    if (todayQueue.length === 0) {
+        let emptyMessages = {
+            'reserved': { icon: 'fa-inbox', title: 'No Reserved Patients', desc: 'Students with accepted appointments will appear here.' },
+            'waiting': { icon: 'fa-hourglass-half', title: 'No Waiting Patients', desc: 'Add patients from reserved to start the queue.' },
+            'serving': { icon: 'fa-user-md', title: 'No Patient Being Served', desc: 'Click "Serve Now" to start serving a patient.' },
+            'completed': { icon: 'fa-check-circle', title: 'No Completed Patients', desc: 'Completed consultations will appear here.' },
+            'cancelled': { icon: 'fa-times-circle', title: 'No Cancelled Appointments', desc: 'Cancelled appointments will appear here.' }
+        };
+        
+        let msg = emptyMessages[currentTab];
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas ${msg.icon}"></i>
+                <h3>${msg.title}</h3>
+                <p>${msg.desc}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by time added (except cancelled - sort by cancelled time)
+    if (currentTab === 'cancelled') {
+        todayQueue.sort((a, b) => new Date(b.cancelledAt || 0) - new Date(a.cancelledAt || 0));
+    } else {
+        todayQueue.sort((a, b) => new Date(a.addedAt || 0) - new Date(b.addedAt || 0));
+    }
+    
+    container.innerHTML = todayQueue.map(patient => {
+        let patientId = patient.id || patient.appointmentId || patient.studentId;
+        let idStr = patientId.toString();
+        
+        let queueNumDisplay = patient.queueNumber ? 
+            `<div class="queue-number ${patient.status === 'reserved' ? 'pending' : ''} ${patient.status === 'cancelled' ? 'cancelled' : ''}">#${patient.queueNumber}</div>` : 
+            '<div class="queue-number pending">--</div>';
+        
+        let actions = getActionButtons(patient, idStr);
+        
+        // Cancelled reason display
+        let cancelledInfo = '';
+        if (patient.status === 'cancelled') {
+            cancelledInfo = `
+                <div class="cancelled-reason">
+                    <strong><i class="fas fa-info-circle"></i> Cancellation Reason:</strong>
+                    <p>${patient.cancellationReason || 'No reason provided'}</p>
+                    <small style="opacity: 0.7;">Cancelled at: ${new Date(patient.cancelledAt).toLocaleTimeString()}</small>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="patient-card ${patient.status}" data-id="${idStr}">
+                <div class="patient-header">
+                    <div class="patient-info">
+                        <div class="patient-avatar ${patient.status === 'cancelled' ? 'cancelled' : ''}">
+                            <i class="fas ${patient.status === 'cancelled' ? 'fa-user-times' : 'fa-user'}"></i>
+                        </div>
+                        <div class="patient-details">
+                            <h4>${patient.studentName || 'Unknown'} ${patient.status === 'cancelled' ? '<span style="color: #f44336; font-size: 12px;">(CANCELLED)</span>' : ''}</h4>
+                            <p>ID: ${patient.studentId || 'N/A'} | ${patient.studentCourse || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="patient-meta">
+                        ${queueNumDisplay}
+                        <span class="status-badge ${patient.status} ${patient.cancelledBy === 'student' ? 'cancelled-by-student' : ''}">
+                            ${patient.status} ${patient.cancelledBy === 'student' ? '(Student)' : ''}
+                        </span>
+                    </div>
+                </div>
+                <div class="complaint-box ${patient.status === 'cancelled' ? 'cancelled' : ''}">
+                    <strong><i class="fas fa-clipboard-list"></i> Chief Complaint:</strong> ${patient.chiefComplaint || patient.reason || 'Consultation'}
+                </div>
+                ${cancelledInfo}
+                <div class="action-buttons">
+                    ${actions}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Get action buttons based on status
+function getActionButtons(patient, patientId) {
+    let buttons = '';
+    let id = patientId || patient.id || patient.appointmentId;
+    
+    if (!id) {
+        console.error("No valid ID for patient:", patient);
+        return '<span style="color: red;">Error: No ID</span>';
+    }
+    
+    let idStr = id.toString();
+    
+    if (patient.status === 'reserved') {
+        buttons = `
+            <button class="btn btn-add" onclick="addToQueue('${idStr}')">
+                <i class="fas fa-plus"></i> Add to Queue
+            </button>
+            <button class="btn btn-remove" onclick="removeFromQueue('${idStr}')">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        `;
+    } else if (patient.status === 'waiting') {
+        buttons = `
+            <button class="btn btn-serve" onclick="servePatient('${idStr}')">
+                <i class="fas fa-stethoscope"></i> Serve Now
+            </button>
+            <button class="btn btn-skip" onclick="skipPatient('${idStr}')">
+                <i class="fas fa-forward"></i> Skip
+            </button>
+        `;
+    } else if (patient.status === 'serving') {
+        buttons = `
+            <button class="btn btn-complete" onclick="completePatient('${idStr}')">
+                <i class="fas fa-check"></i> Complete
+            </button>
+        `;
+    // FIX: Check for 'finished' status instead of 'completed'
+    } else if (patient.status === 'finished') {
+        buttons = `
+            <span style="color: #9E9E9E; font-size: 13px; font-style: italic;">
+                <i class="fas fa-check-circle"></i> Consultation completed
+            </span>
+        `;
+    } else if (patient.status === 'cancelled') {
+        buttons = `
+            <button class="btn btn-remove" onclick="permanentlyRemove('${idStr}')">
+                <i class="fas fa-trash-alt"></i> Remove Permanently
+            </button>
+            <button class="btn btn-restore" onclick="restorePatient('${idStr}')" style="${patient.cancelledBy === 'student' ? 'display:none' : ''}">
+                <i class="fas fa-undo"></i> Restore
+            </button>
+        `;
+    }
+    
+    return buttons;
+}
+
+// Add to queue
+function addToQueue(queueId) {
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    let patient = queue.find(q => {
+        return (q.id && q.id.toString() === queueId.toString()) ||
+               (q.appointmentId && q.appointmentId.toString() === queueId.toString()) ||
+               (q.studentId && q.studentId.toString() === queueId.toString() && q.date === today && q.status === 'reserved');
+    });
+    
+    if (!patient) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    // Check if student cancelled while in reserved
+    let cancelledItems = JSON.parse(localStorage.getItem("cancelledQueueItems")) || [];
+    let isCancelled = cancelledItems.find(c => c.id === queueId || c.studentId === patient.studentId);
+    
+    if (isCancelled && !isCancelled.processedByStaff) {
+        showToast("This student has cancelled their appointment!", true);
+        handleStudentCancellation(); // Process the cancellation
+        return;
+    }
+    
+    patient.status = 'waiting';
+    patient.queueNumber = nextQueueNumber;
+    patient.queueAssignedAt = new Date().toISOString();
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    
+    showToast(`${patient.studentName} added to queue with number #${nextQueueNumber}`);
+    nextQueueNumber++;
+    
+    updateStats();
+    loadPatients();
+    
+    // Create notification for student
+    createStudentNotification(patient, "queue_assigned");
+}
+
+// Serve patient
+function servePatient(queueId) {
+    let today = new Date().toISOString().split('T')[0];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    let patient = queue.find(q => {
+        return (q.id && q.id.toString() === queueId.toString()) ||
+               (q.appointmentId && q.appointmentId.toString() === queueId.toString());
+    });
+    
+    if (!patient) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    // Check if cancelled
+    if (patient.status === 'cancelled') {
+        showToast("This appointment has been cancelled!", true);
+        return;
+    }
+    
+    // Check if someone else is being served
+    let currentlyServing = queue.find(q => q.date === today && q.status === 'serving');
+    if (currentlyServing && currentlyServing.id !== patient.id) {
+        showToast(`Please complete ${currentlyServing.studentName} first!`, true);
+        return;
+    }
+    
+    patient.status = 'serving';
+    patient.servedAt = new Date().toISOString();
+    
+    localStorage.setItem("servingNow", patient.queueNumber.toString());
+    localStorage.setItem("servingId", patient.id ? patient.id.toString() : patient.appointmentId.toString());
+    localStorage.setItem("servingName", patient.studentName);
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    
+    updateNowServingDisplay(patient.queueNumber, patient.id || patient.appointmentId);
+    
+    showToast(`Now serving ${patient.studentName} (#${patient.queueNumber})`);
+    
+    updateStats();
+    loadPatients();
+    
+    createStudentNotification(patient, "now_serving");
+}
+
+// Complete patient
+function completePatient(queueId) {
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    let patient = queue.find(q => {
+        return (q.id && q.id.toString() === queueId.toString()) ||
+               (q.appointmentId && q.appointmentId.toString() === queueId.toString());
+    });
+    
+    if (!patient) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    // FIX: Use 'finished' status instead of 'completed' to avoid health record sync
+    patient.status = 'finished';
+    patient.finishedAt = new Date().toISOString();
+    // Do NOT set completedAt to avoid triggering health record creation
+    
+    localStorage.removeItem("servingNow");
+    localStorage.removeItem("servingId");
+    localStorage.removeItem("servingName");
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    
+    document.getElementById("nowServingSection").style.display = "none";
+    
+    showToast(`${patient.studentName} marked as completed`);
+    
+    updateStats();
+    loadPatients();
+    
+    // Update appointment status to 'Finished' instead of 'Completed' 
+    // to avoid triggering health record creation from appointments array
+    let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    let appt = appointments.find(a => a.id === patient.appointmentId || a.id === patient.id);
+    if (appt) {
+        appt.status = "Finished"; // Changed from "Completed" to avoid health record sync
+        localStorage.setItem("appointments", JSON.stringify(appointments));
+    }
+    
+    // Use 'finished' type for notification
+    createStudentNotification(patient, "finished");
+}
+
+// Skip patient
+function skipPatient(queueId) {
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    let patient = queue.find(q => {
+        return (q.id && q.id.toString() === queueId.toString()) ||
+               (q.appointmentId && q.appointmentId.toString() === queueId.toString());
+    });
+    
+    if (!patient) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    patient.status = 'skipped';
+    patient.skippedAt = new Date().toISOString();
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    
+    showToast(`${patient.studentName} skipped`);
+    
+    updateStats();
+    loadPatients();
+    
+    createStudentNotification(patient, "skipped");
+}
+
+// Remove from queue
+function removeFromQueue(queueId) {
+    if (!confirm("Remove this patient from the list?")) return;
+    
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let originalLength = queue.length;
+    
+    queue = queue.filter(q => {
+        let match = (q.id && q.id.toString() === queueId.toString()) ||
+                    (q.appointmentId && q.appointmentId.toString() === queueId.toString());
+        return !match;
+    });
+    
+    if (queue.length === originalLength) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    showToast("Patient removed");
+    
+    updateStats();
+    loadPatients();
+}
+
+// Permanently remove cancelled patient
+function permanentlyRemove(queueId) {
+    if (!confirm("Permanently remove this cancelled appointment from records?")) return;
+    
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    queue = queue.filter(q => {
+        return !((q.id && q.id.toString() === queueId.toString()) ||
+                 (q.appointmentId && q.appointmentId.toString() === queueId.toString()));
+    });
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    showToast("Record removed permanently");
+    
+    updateStats();
+    loadPatients();
+}
+
+// Restore cancelled patient (staff only - if cancelled by mistake)
+function restorePatient(queueId) {
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    
+    let patient = queue.find(q => {
+        return (q.id && q.id.toString() === queueId.toString()) ||
+               (q.appointmentId && q.appointmentId.toString() === queueId.toString());
+    });
+    
+    if (!patient) {
+        showToast("Patient not found!", true);
+        return;
+    }
+    
+    // Restore to reserved status
+    patient.status = 'reserved';
+    patient.restoredAt = new Date().toISOString();
+    delete patient.cancelledAt;
+    delete patient.cancelledBy;
+    delete patient.cancellationReason;
+    
+    localStorage.setItem("queue", JSON.stringify(queue));
+    showToast(`${patient.studentName} restored to reserved`);
+    
+    updateStats();
+    loadPatients();
+    
+    // Also update in cancelled items
+    let cancelledItems = JSON.parse(localStorage.getItem("cancelledQueueItems")) || [];
+    cancelledItems = cancelledItems.filter(c => c.id !== queueId && c.studentId !== patient.studentId);
+    localStorage.setItem("cancelledQueueItems", JSON.stringify(cancelledItems));
+}
+
+// Update now serving display
+function updateNowServingDisplay(number, id) {
+    let section = document.getElementById("nowServingSection");
+    let numEl = document.getElementById("servingNumber");
+    let nameEl = document.getElementById("servingName");
+    
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let patient = queue.find(q => {
+        if (q.id && q.id.toString() === id.toString()) return true;
+        if (q.appointmentId && q.appointmentId.toString() === id.toString()) return true;
+        return false;
+    });
+    
+    if (patient && patient.status !== 'cancelled') {
+        section.style.display = "block";
+        numEl.textContent = "#" + number;
+        nameEl.textContent = patient.studentName;
+    } else {
+        section.style.display = "none";
+        if (patient && patient.status === 'cancelled') {
+            showToast("Current patient has cancelled!", true);
+            localStorage.removeItem("servingNow");
+            localStorage.removeItem("servingId");
+            localStorage.removeItem("servingName");
+        }
+    }
+}
+
+// Create notification for student
+function createStudentNotification(patient, type) {
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+    
+    // FIX: Added 'finished' type to avoid confusion with 'completed'
+    let titles = {
+        "queue_assigned": "Queue Number Assigned",
+        "now_serving": "Now Serving - Please Proceed",
+        "completed": "Consultation Completed",
+        "finished": "Consultation Completed",  // Same message for finished status
+        "skipped": "You Were Skipped"
+    };
+    
+    let messages = {
+        "queue_assigned": `You have been assigned queue number #${patient.queueNumber}. Please wait for your turn.`,
+        "now_serving": `It's your turn! Please proceed to the clinic now. Your queue number is #${patient.queueNumber}.`,
+        "completed": `Your consultation has been completed. Thank you for visiting CampusCare+.`,
+        "finished": `Your consultation has been completed. Thank you for visiting CampusCare+.`,  // Same message
+        "skipped": `You were skipped in the queue. Please approach the clinic staff.`
+    };
+    
+    notifications.push({
+        id: Date.now(),
+        studentId: patient.studentId,
+        title: titles[type],
+        message: messages[type],
+        type: type,
+        read: false,
+        createdAt: new Date().toISOString()
+    });
+    
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+}
+
+// Initialize on load
+window.onload = init;
+</script>
+
+</body>
+</html>

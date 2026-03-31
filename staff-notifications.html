@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Notifications - Staff | CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F4C2A1 0%, #D4A574 100%); min-height: 100vh; }
+
+.header { background: rgba(255,245,238,0.95); color: #5D4037; padding: 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(93,64,55,0.15); }
+.header h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.back-btn { background: none; border: none; color: #8B4513; font-size: 20px; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; transition: all 0.3s; }
+.back-btn:hover { background: rgba(139,69,19,0.1); }
+
+.notif-badge { background: #f44336; color: white; font-size: 12px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; animation: pulse 2s infinite; }
+
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+/* ── Upcoming Appointments Banner ── */
+.upcoming-banner {
+    background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(25,118,210,0.3);
+    display: none;
+}
+.upcoming-banner.active { display: block; }
+.upcoming-banner-title {
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.upcoming-list { display: flex; flex-direction: column; gap: 8px; }
+.upcoming-item {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.upcoming-item-left { font-size: 13px; font-weight: 600; }
+.upcoming-item-sub  { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+.upcoming-urgency {
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; white-space: nowrap;
+}
+.urgency-now    { background: #f44336; }
+.urgency-soon   { background: #FF9800; }
+.urgency-today  { background: rgba(255,255,255,0.25); }
+
+/* CLICK HERE BUTTON for NOW appointments */
+.click-here-now {
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+    animation: pulse-green 1.5s infinite;
+    text-decoration: none;
+}
+
+.click-here-now:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.6);
+}
+
+.click-here-now:active {
+    transform: scale(0.95);
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4); }
+    50% { box-shadow: 0 4px 15px rgba(76, 175, 80, 0.8); }
+}
+
+.notification-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+.notification-item { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 18px 20px; box-shadow: 0 4px 15px rgba(93,64,55,0.08); border-left: 4px solid #8B4513; transition: all 0.3s; cursor: pointer; position: relative; }
+.notification-item:hover { transform: translateX(5px); box-shadow: 0 6px 20px rgba(93,64,55,0.12); }
+.notification-item.unread { border-left-color: #f44336; background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,235,238,0.5) 100%); }
+.notification-item.unread::before { content: ''; position: absolute; top: 20px; right: 20px; width: 10px; height: 10px; background: #f44336; border-radius: 50%; animation: pulse 2s infinite; }
+.notification-item.new-patient  { border-left-color: #4CAF50; }
+.notification-item.appointment  { border-left-color: #2196F3; }
+.notification-item.upcoming     { border-left-color: #FF9800; }
+.notification-item.cancelled    { border-left-color: #f44336; }
+.notification-item.completed    { border-left-color: #757575; opacity: 0.8; }
+.notification-item.accepted     { border-left-color: #9C27B0; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.notif-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.notif-title { font-size: 16px; font-weight: 700; color: #5D4037; display: flex; align-items: center; gap: 8px; }
+.notif-title i { font-size: 18px; }
+.notif-time { font-size: 12px; color: #8B4513; font-weight: 500; }
+.notif-message { font-size: 14px; color: #5D4037; line-height: 1.5; margin-bottom: 10px; }
+.notif-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn-delete { background: rgba(244,67,54,0.1); color: #f44336; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+.btn-delete:hover { background: #f44336; color: white; }
+.btn-mark { background: rgba(33,150,243,0.1); color: #2196F3; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+.btn-mark:hover { background: #2196F3; color: white; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #8B4513; opacity: 0.7; }
+.empty-state i { font-size: 64px; margin-bottom: 20px; }
+.empty-state h3 { font-size: 20px; margin-bottom: 10px; }
+
+.clear-all { text-align: center; margin-top: 20px; }
+.btn-clear { background: linear-gradient(135deg, #757575 0%, #424242 100%); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+.btn-clear:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: #4CAF50; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); display: none; align-items: center; gap: 10px; font-weight: 600; z-index: 400; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.active { display: flex; }
+.toast.error { background: #f44336; }
+
+.new-alert { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); display: none; align-items: center; gap: 12px; font-weight: 600; z-index: 300; animation: dropIn 0.5s ease; cursor: pointer; }
+@keyframes dropIn { from { transform: translateX(-50%) translateY(-100%); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+.new-alert.active { display: flex; }
+.new-alert i { font-size: 24px; animation: ring 1s infinite; }
+@keyframes ring { 0%, 100% { transform: rotate(0); } 10%, 30%, 50% { transform: rotate(15deg); } 20%, 40% { transform: rotate(-15deg); } }
+
+.patient-info { background: rgba(139,69,19,0.05); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; color: #5D4037; line-height: 1.6; }
+.patient-info strong { color: #8B4513; }
+
+@media (max-width: 600px) {
+    .notif-header { flex-direction: column; gap: 5px; }
+    .notif-actions { flex-direction: column; }
+    .btn-delete, .btn-mark { width: 100%; justify-content: center; }
+    .upcoming-item { flex-direction: column; align-items: flex-start; }
+    .click-here-now { width: 100%; justify-content: center; margin-top: 8px; }
+}
+</style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="goTo('staff-dashboard.html')"><i class="fas fa-arrow-left"></i></button>
+    <h2>
+        <i class="fas fa-bell" style="color: #8B4513;"></i>
+        Notifications
+        <span class="notif-badge" id="unreadCount" style="display:none;">0</span>
+    </h2>
+    <div style="width:40px;"></div>
+</div>
+
+<div class="new-alert" id="newAlert" onclick="dismissAlert()">
+    <i class="fas fa-bell"></i>
+    <span id="newAlertText">You have a new client!</span>
+</div>
+
+<div class="container">
+
+    <!-- ── Upcoming Appointments Banner ── -->
+    <div class="upcoming-banner" id="upcomingBanner">
+        <div class="upcoming-banner-title">
+            <i class="fas fa-clock"></i> Upcoming Appointments
+        </div>
+        <div class="upcoming-list" id="upcomingList"></div>
+    </div>
+
+    <!-- Notification List Only -->
+    <div class="notification-list" id="notificationList">
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <h3>No Notifications</h3>
+            <p>You're all caught up!</p>
+        </div>
+    </div>
+
+    <div class="clear-all" id="clearAllBtn" style="display:none;">
+        <button class="btn-clear" onclick="clearAllNotifications()">
+            <i class="fas fa-trash-alt"></i> Clear All Notifications
+        </button>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Success!</span></div>
+
+<script>
+let notifications  = [];
+const $ = id => document.getElementById(id);
+
+/* ════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════ */
+window.onload = () => {
+    if (!localStorage.getItem("staffNotifications"))
+        localStorage.setItem("staffNotifications", JSON.stringify([]));
+
+    // Only sync new appointments, don't recreate deleted ones
+    syncNewAppointmentsOnly();
+    renderUpcomingBanner();
+    loadNotifications();
+    setupStorageListener();
+
+    setInterval(renderUpcomingBanner, 60000);
+    setInterval(() => { syncNewAppointmentsOnly(); loadNotifications(); }, 30000);
+};
+
+/* ════════════════════════════════════════════════════════════
+   TRACK DELETED NOTIFICATIONS
+   Prevent recreation of deleted notifications
+════════════════════════════════════════════════════════════ */
+function getDeletedNotificationIds() {
+    return JSON.parse(localStorage.getItem("deletedNotificationIds")) || [];
+}
+
+function trackDeletedNotification(notifId) {
+    let deletedIds = getDeletedNotificationIds();
+    if (!deletedIds.includes(notifId)) {
+        deletedIds.push(notifId);
+        localStorage.setItem("deletedNotificationIds", JSON.stringify(deletedIds));
+    }
+}
+
+function trackDeletedAppointment(appointmentId, type) {
+    let deletedAppts = JSON.parse(localStorage.getItem("deletedAppointmentNotifs")) || [];
+    const key = `${appointmentId}_${type}`;
+    if (!deletedAppts.includes(key)) {
+        deletedAppts.push(key);
+        localStorage.setItem("deletedAppointmentNotifs", JSON.stringify(deletedAppts));
+    }
+}
+
+function isAppointmentNotifDeleted(appointmentId, type) {
+    let deletedAppts = JSON.parse(localStorage.getItem("deletedAppointmentNotifs")) || [];
+    const key = `${appointmentId}_${type}`;
+    return deletedAppts.includes(key);
+}
+
+/* ════════════════════════════════════════════════════════════
+   SYNC ONLY NEW APPOINTMENTS
+   Don't recreate notifications for appointments that were already processed
+════════════════════════════════════════════════════════════ */
+function syncNewAppointmentsOnly() {
+    const appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    const existingNotifs = getAllNotifications();
+
+    appointments.forEach(a => {
+        // Check if notification for this appointment already exists
+        const hasPendingNotif = existingNotifs.some(n => n.appointmentId === a.id && n.type === 'new-patient');
+        const hasAcceptedNotif = existingNotifs.some(n => n.appointmentId === a.id && n.type === 'accepted');
+        const hasCompletedNotif = existingNotifs.some(n => n.appointmentId === a.id && n.type === 'completed');
+
+        // Check if this appointment's notification was previously deleted
+        const pendingDeleted = isAppointmentNotifDeleted(a.id, 'new-patient');
+        const acceptedDeleted = isAppointmentNotifDeleted(a.id, 'accepted');
+        const completedDeleted = isAppointmentNotifDeleted(a.id, 'completed');
+
+        if (a.status === 'Pending' && !hasPendingNotif && !pendingDeleted) {
+            createNewClientNotification(a);
+        }
+        if (a.status === 'Accepted' && !hasAcceptedNotif && !acceptedDeleted) {
+            createAcceptedNotification(a);
+        }
+        if (a.status === 'Completed' && !hasCompletedNotif && !completedDeleted) {
+            createCompletedNotification(a);
+        }
+    });
+}
+
+/* ════════════════════════════════════════════════════════════
+   UPCOMING APPOINTMENTS BANNER
+════════════════════════════════════════════════════════════ */
+function renderUpcomingBanner() {
+    const appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    const now          = new Date();
+    const todayStr     = now.toISOString().split('T')[0];
+
+    const upcoming = appointments
+        .filter(a => (a.status === 'Accepted' || a.status === 'Pending') && a.date && a.time)
+        .map(a => {
+            const apptDateTime = new Date(`${a.date}T${a.time}`);
+            const diffMs       = apptDateTime - now;
+            const diffMin      = Math.round(diffMs / 60000);
+            return { ...a, apptDateTime, diffMin };
+        })
+        .filter(a => a.diffMin >= -30 && a.diffMin <= 48 * 60)
+        .sort((a, b) => a.apptDateTime - b.apptDateTime);
+
+    const banner = $('upcomingBanner');
+    const list   = $('upcomingList');
+
+    if (!upcoming.length) {
+        banner.classList.remove('active');
+        return;
+    }
+
+    banner.classList.add('active');
+    list.innerHTML = upcoming.map(a => {
+        let urgencyClass = 'urgency-today';
+        let urgencyText  = `Today at ${a.time}`;
+        let isNow = false;
+
+        if (a.diffMin <= 0) {
+            urgencyClass = 'urgency-now';
+            urgencyText  = 'NOW';
+            isNow = true;
+        } else if (a.diffMin <= 30) {
+            urgencyClass = 'urgency-now';
+            urgencyText  = `In ${a.diffMin} min`;
+        } else if (a.diffMin <= 60) {
+            urgencyClass = 'urgency-soon';
+            urgencyText  = `In ${a.diffMin} min`;
+        } else if (a.diffMin <= 120) {
+            urgencyClass = 'urgency-soon';
+            urgencyText  = `In ${Math.round(a.diffMin / 60)} hr`;
+        } else if (a.date !== todayStr) {
+            urgencyText = formatDateShort(a.date) + ' at ' + a.time;
+        }
+
+        // Build Click Here button for NOW appointments (diffMin <= 0)
+        let clickHereBtn = '';
+        if (isNow) {
+            clickHereBtn = `
+                <button class="click-here-now" onclick="acceptAppointmentFromBanner('${a.id}', event)">
+                    <i class="fas fa-hand-pointer"></i> Click Here to Accept
+                </button>`;
+        }
+
+        return `
+            <div class="upcoming-item">
+                <div>
+                    <div class="upcoming-item-left">
+                        <i class="fas fa-user"></i> ${a.studentName}
+                        <span style="opacity:0.7;font-weight:400;margin-left:6px;">(${a.studentId})</span>
+                    </div>
+                    <div class="upcoming-item-sub">
+                        <i class="fas fa-stethoscope"></i> ${a.chiefComplaint || a.reason || 'Consultation'}
+                        &nbsp;•&nbsp; Status: ${a.status}
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="upcoming-urgency ${urgencyClass}">${urgencyText}</span>
+                    ${clickHereBtn}
+                </div>
+            </div>`;
+    }).join('');
+
+    // Create upcoming notifications for appointments within 60 min
+    upcoming
+        .filter(a => a.diffMin >= 0 && a.diffMin <= 60)
+        .forEach(a => createUpcomingNotification(a));
+}
+
+/* ════════════════════════════════════════════════════════════
+   CLICK HERE FUNCTIONALITY — Accept appointment from banner
+════════════════════════════════════════════════════════════ */
+function acceptAppointmentFromBanner(appointmentId, event) {
+    if (event) event.stopPropagation();
+
+    // Store the appointment ID to highlight it in staff-appointments.html
+    localStorage.setItem("highlightAppointment", appointmentId);
+    localStorage.setItem("autoAcceptAppointment", appointmentId);
+
+    // Show toast notification
+    showToast("Redirecting to appointments...");
+
+    // Redirect to staff-appointments.html
+    setTimeout(() => {
+        window.location.href = "staff-appointments.html";
+    }, 800);
+}
+
+/* ════════════════════════════════════════════════════════════
+   NOTIFICATION CREATORS
+════════════════════════════════════════════════════════════ */
+
+function createNewClientNotification(appointment) {
+    const notifs = getAllNotifications();
+    if (notifs.some(n => n.appointmentId === appointment.id && n.type === 'new-patient')) return;
+
+    // Check if this appointment's notification was deleted before
+    if (isAppointmentNotifDeleted(appointment.id, 'new-patient')) return;
+
+    addNotification({
+        id:            Date.now() + Math.random(),
+        type:          'new-patient',
+        title:         '🎉 New Client Booking!',
+        message:       `${appointment.studentName} has booked an appointment and is waiting for your approval.`,
+        details: {
+            patientName: appointment.studentName,
+            studentId:   appointment.studentId,
+            date:        appointment.date,
+            time:        appointment.time,
+            complaint:   appointment.chiefComplaint || 'General consultation',
+            status:      appointment.status
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+
+    showNewAlert(`New client: ${appointment.studentName}`);
+}
+
+function createAcceptedNotification(appointment) {
+    const notifs = getAllNotifications();
+    if (notifs.some(n => n.appointmentId === appointment.id && n.type === 'accepted')) return;
+
+    // Check if this appointment's notification was deleted before
+    if (isAppointmentNotifDeleted(appointment.id, 'accepted')) return;
+
+    addNotification({
+        id:            Date.now() + Math.random(),
+        type:          'accepted',
+        title:         '✅ You Accepted a Client',
+        message:       `You accepted ${appointment.studentName}'s appointment. They have been added to the queue.`,
+        details: {
+            patientName: appointment.studentName,
+            studentId:   appointment.studentId,
+            date:        appointment.date,
+            time:        appointment.time,
+            complaint:   appointment.chiefComplaint || 'General consultation',
+            status:      'Accepted'
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+}
+
+function createCompletedNotification(appointment) {
+    const notifs = getAllNotifications();
+    if (notifs.some(n => n.appointmentId === appointment.id && n.type === 'completed')) return;
+
+    // Check if this appointment's notification was deleted before
+    if (isAppointmentNotifDeleted(appointment.id, 'completed')) return;
+
+    addNotification({
+        id:            Date.now() + Math.random(),
+        type:          'completed',
+        title:         '✓ Appointment Completed',
+        message:       `Consultation with ${appointment.studentName} is complete.`,
+        details: {
+            patientName: appointment.studentName,
+            studentId:   appointment.studentId,
+            date:        appointment.date,
+            time:        appointment.time,
+            status:      'Completed'
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+}
+
+function createCancellationNotification(appointment, cancelledBy = 'student') {
+    const isStudent = cancelledBy === 'student';
+    addNotification({
+        id:            Date.now() + Math.random(),
+        type:          'cancelled',
+        title:         isStudent ? '❌ Client Cancelled Appointment' : '❌ You Cancelled Appointment',
+        message:       isStudent
+            ? `${appointment.studentName} has cancelled their appointment.`
+            : `You cancelled ${appointment.studentName}'s appointment.`,
+        details: {
+            patientName:  appointment.studentName,
+            studentId:    appointment.studentId,
+            date:         appointment.date,
+            time:         appointment.time,
+            reason:       appointment.cancellationReason || 'No reason provided',
+            cancelledBy
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+}
+
+function createUpcomingNotification(appointment) {
+    const notifs = getAllNotifications();
+    if (notifs.some(n => n.appointmentId === appointment.id && n.type === 'upcoming')) return;
+
+    const diffMin  = appointment.diffMin;
+    const timeText = diffMin <= 0 ? 'NOW' : diffMin < 60 ? `in ${diffMin} minutes` : `in ${Math.round(diffMin / 60)} hour(s)`;
+
+    addNotification({
+        id:            Date.now() + Math.random(),
+        type:          'upcoming',
+        title:         `⏰ Upcoming Appointment ${timeText === 'NOW' ? '— NOW' : `(${timeText})`}`,
+        message:       `${appointment.studentName} has an appointment scheduled at ${appointment.time} on ${formatDate(appointment.date)}. Status: ${appointment.status}.`,
+        details: {
+            patientName: appointment.studentName,
+            studentId:   appointment.studentId,
+            date:        appointment.date,
+            time:        appointment.time,
+            complaint:   appointment.chiefComplaint || 'General consultation',
+            status:      appointment.status
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+}
+
+/* ════════════════════════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════════════════════════ */
+function addNotification(notification) {
+    let notifs = getAllNotifications();
+    notifs.unshift(notification);
+    localStorage.setItem("staffNotifications", JSON.stringify(notifs));
+    loadNotifications();
+}
+
+function getAllNotifications() {
+    return JSON.parse(localStorage.getItem("staffNotifications")) || [];
+}
+
+function getUnreadCount() {
+    return getAllNotifications().filter(n => !n.read).length;
+}
+
+function setupStorageListener() {
+    window.addEventListener('storage', e => {
+        if (e.key === 'appointments') {
+            syncNewAppointmentsOnly();
+            renderUpcomingBanner();
+        }
+        if (e.key === 'staffNotifications') loadNotifications();
+    });
+}
+
+/* ════════════════════════════════════════════════════════════
+   CRUD ACTIONS
+════════════════════════════════════════════════════════════ */
+function markAsRead(notifId, event) {
+    if (event) event.stopPropagation();
+    let notifs = getAllNotifications();
+    const i = notifs.findIndex(n => n.id === notifId);
+    if (i !== -1) { notifs[i].read = true; notifs[i].readAt = new Date().toISOString(); }
+    localStorage.setItem("staffNotifications", JSON.stringify(notifs));
+    loadNotifications();
+    showToast("Marked as read");
+}
+
+function markAllAsRead() {
+    let notifs = getAllNotifications().map(n => ({ ...n, read: true, readAt: new Date().toISOString() }));
+    localStorage.setItem("staffNotifications", JSON.stringify(notifs));
+    loadNotifications();
+    showToast("All notifications marked as read");
+}
+
+function deleteNotification(notifId, event) {
+    if (event) event.stopPropagation();
+
+    // Track this notification as deleted
+    trackDeletedNotification(notifId);
+
+    // Also track by appointment ID and type to prevent recreation
+    let notifs = getAllNotifications();
+    const notifToDelete = notifs.find(n => n.id === notifId);
+    if (notifToDelete && notifToDelete.appointmentId && notifToDelete.type) {
+        trackDeletedAppointment(notifToDelete.appointmentId, notifToDelete.type);
+    }
+
+    // Remove from notifications array
+    notifs = notifs.filter(n => n.id !== notifId);
+    localStorage.setItem("staffNotifications", JSON.stringify(notifs));
+    loadNotifications();
+    showToast("Notification deleted");
+}
+
+function clearAllNotifications() {
+    if (!confirm("Clear all notifications? This cannot be undone.")) return;
+
+    // Track all notifications as deleted before clearing
+    let notifs = getAllNotifications();
+    notifs.forEach(n => {
+        trackDeletedNotification(n.id);
+        if (n.appointmentId && n.type) {
+            trackDeletedAppointment(n.appointmentId, n.type);
+        }
+    });
+
+    localStorage.setItem("staffNotifications", JSON.stringify([]));
+    loadNotifications();
+    showToast("All notifications cleared");
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════════════ */
+function loadNotifications() {
+    notifications = getAllNotifications();
+    notifications.sort((a, b) => {
+        if (a.read !== b.read) return a.read ? 1 : -1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    updateBadge();
+    $("clearAllBtn").style.display = notifications.length > 0 ? "block" : "none";
+    renderNotifications(notifications);
+}
+
+function updateBadge() {
+    const notifs = getAllNotifications();
+    const unread = notifs.filter(n => !n.read).length;
+    const badge  = $("unreadCount");
+    if (unread > 0) { badge.textContent = unread > 99 ? '99+' : unread; badge.style.display = "inline-block"; }
+    else badge.style.display = "none";
+}
+
+function renderNotifications(filtered) {
+    const container = $("notificationList");
+    if (!filtered.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-bell-slash"></i>
+                <h3>No Notifications</h3>
+                <p>You're all caught up!</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(notif => {
+        const isUnread = !notif.read;
+        const icon     = getIconForType(notif.type);
+        const timeText = formatTimeAgo(notif.createdAt);
+
+        // Actions: Mark as Read (if unread) and Delete only
+        let actionHtml = '';
+        if (isUnread) {
+            actionHtml += `<button class="btn-mark" onclick="markAsRead(${notif.id}, event)">
+                <i class="fas fa-check"></i> Mark as Read
+            </button>`;
+        }
+        actionHtml += `<button class="btn-delete" onclick="deleteNotification(${notif.id}, event)">
+            <i class="fas fa-trash"></i> Delete
+        </button>`;
+
+        let patientHtml = '';
+        if (notif.details) {
+            patientHtml = `
+                <div class="patient-info">
+                    <i class="fas fa-user-injured"></i> <strong>${notif.details.patientName}</strong>
+                    &nbsp;|&nbsp; <i class="fas fa-id-card"></i> ${notif.details.studentId}
+                    &nbsp;|&nbsp; <i class="fas fa-calendar"></i> ${formatDate(notif.details.date)}
+                    ${notif.details.time ? `&nbsp;|&nbsp; <i class="fas fa-clock"></i> ${notif.details.time}` : ''}
+                    ${notif.details.complaint ? `&nbsp;|&nbsp; <i class="fas fa-stethoscope"></i> ${notif.details.complaint}` : ''}
+                </div>`;
+        }
+
+        return `
+            <div class="notification-item ${notif.type} ${isUnread ? 'unread' : ''}" id="notif-${notif.id}">
+                <div class="notif-header">
+                    <div class="notif-title"><i class="fas ${icon}"></i> ${notif.title}</div>
+                    <div class="notif-time"><i class="far fa-clock"></i> ${timeText}</div>
+                </div>
+                <div class="notif-message">${notif.message}</div>
+                ${patientHtml}
+                <div class="notif-actions">${actionHtml}</div>
+            </div>`;
+    }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════════════ */
+function getIconForType(type) {
+    return { 'new-patient':'fa-user-plus', 'accepted':'fa-check-circle', 'completed':'fa-check-double',
+             'cancelled':'fa-times-circle', 'upcoming':'fa-clock', 'appointment':'fa-calendar-check' }[type] || 'fa-bell';
+}
+
+function showNewAlert(text = "You have a new client!") {
+    $("newAlertText").textContent = text;
+    $("newAlert").classList.add("active");
+    setTimeout(() => $("newAlert").classList.remove("active"), 5000);
+}
+function dismissAlert() { $("newAlert").classList.remove("active"); }
+
+function showToast(msg, isError = false) {
+    const t = $("toast");
+    $("toastMsg").textContent = msg;
+    t.className = isError ? "toast error active" : "toast active";
+    setTimeout(() => t.classList.remove("active"), 3000);
+}
+
+function formatTimeAgo(dateString) {
+    const diff = Math.floor((new Date() - new Date(dateString)) / 1000);
+    if (diff < 60)    return 'Just now';
+    if (diff < 3600)  return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+    if (isToday(dateString)) return 'Today';
+    return new Date(dateString).toLocaleDateString();
+}
+
+function isToday(ds)     { return new Date(ds).toDateString() === new Date().toDateString(); }
+function isYesterday(ds) {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    return new Date(ds).toDateString() === y.toDateString();
+}
+function formatDate(ds) {
+    if (!ds) return 'N/A';
+    return new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function formatDateShort(ds) {
+    if (!ds) return 'N/A';
+    return new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function goTo(url) { window.location.href = url; }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') dismissAlert(); });
+
+/* Public API for other pages */
+window.StaffNotificationSystem = {
+    createNewClientNotification, createAcceptedNotification,
+    createCompletedNotification, createCancellationNotification,
+    markAsRead, deleteNotification, getUnreadCount,
+    clearAllNotifications, syncNewAppointmentsOnly,
+    acceptAppointmentFromBanner
+};
+</script>
+</body>
+</html>

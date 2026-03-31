@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Book Appointment - CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.header {
+    background: rgba(255, 245, 238, 0.95);
+    color: #5D4037;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(93, 64, 55, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #8B4513;
+    font-size: 20px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+.back-btn:hover { background: rgba(139, 69, 19, 0.1); }
+
+.header h2 { font-size: 24px; font-weight: 700; margin-bottom: 5px; color: #5D4037; }
+.welcome-text { font-size: 14px; color: #8B4513; font-weight: 500; }
+
+.main-container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(93, 64, 55, 0.1);
+    margin-bottom: 20px;
+}
+
+.form-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #5D4037;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group { margin-bottom: 20px; position: relative; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #5D4037;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E8D5C4;
+    border-radius: 12px;
+    background: white;
+    color: #5D4037;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 4px rgba(139, 69, 19, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Error state styling */
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+    border-color: #f44336;
+    box-shadow: 0 0 0 4px rgba(244, 67, 54, 0.1);
+}
+
+.form-group input.valid,
+.form-group select.valid {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+}
+
+.form-group textarea { resize: vertical; min-height: 100px; }
+
+/* Clinic hours info */
+.clinic-hours-info {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    border: 1px solid #90CAF9;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #1565C0;
+}
+
+.clinic-hours-info i {
+    font-size: 18px;
+    color: #1976D2;
+}
+
+/* Error message */
+.error-message {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+    align-items: center;
+    gap: 5px;
+}
+
+.error-message.show {
+    display: flex;
+}
+
+/* Time slot buttons */
+.time-slots-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.time-slot-btn {
+    padding: 10px 8px;
+    border: 2px solid #E8D5C4;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #5D4037;
+    transition: all 0.3s ease;
+}
+
+.time-slot-btn:hover:not(:disabled) {
+    border-color: #8B4513;
+    background: rgba(139, 69, 19, 0.05);
+}
+
+.time-slot-btn.selected {
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    color: white;
+    border-color: #8B4513;
+}
+
+.time-slot-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #999;
+}
+
+.time-slot-btn.past-time {
+    background: #ffebee;
+    border-color: #ffcdd2;
+    color: #c62828;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-btn:hover:not(:disabled) { 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4); 
+}
+
+.submit-btn:active:not(:disabled) { transform: translateY(0); }
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.success-msg {
+    background: #E8F5E9;
+    color: #2E7D32;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    z-index: 400;
+    animation: slideIn 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+.toast.active { display: flex; }
+.toast.error { background: #f44336; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@media (max-width: 600px) {
+    .main-container { padding: 15px; }
+    .form-card { padding: 20px; }
+    .time-slots-container { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    <h2><i class="fas fa-calendar-plus" style="color: #8B4513;"></i> Book Appointment</h2>
+    <p class="welcome-text" id="welcomeMsg">Welcome, Student</p>
+</div>
+
+<div class="main-container">
+    <div class="success-msg" id="successMsg">
+        <i class="fas fa-check-circle"></i>
+        <span>Appointment booked successfully! Staff has been notified.</span>
+    </div>
+
+    <div class="form-card">
+        <div class="form-title">
+            <i class="fas fa-calendar-alt"></i> Schedule Details
+        </div>
+
+        <!-- Clinic Hours Info -->
+        <div class="clinic-hours-info">
+            <i class="fas fa-clock"></i>
+            <span><strong>Clinic Hours:</strong> 8:00 AM - 5:00 PM only</span>
+        </div>
+
+        <div class="form-group">
+            <label for="apptDate"><i class="fas fa-calendar-day"></i> Select Date</label>
+            <input type="date" id="apptDate" onchange="validateDate()">
+            <div class="error-message" id="dateError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Cannot book past dates. Please select today or a future date.</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="apptTime"><i class="fas fa-clock"></i> Select Time (8:00 AM - 5:00 PM)</label>
+            <input type="time" id="apptTime" min="08:00" max="17:00" onchange="validateTime()">
+            <div class="error-message" id="timeError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="timeErrorText">Please select a time between 8:00 AM and 5:00 PM.</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="apptReason"><i class="fas fa-stethoscope"></i> Chief Complaint / Reason</label>
+            <textarea id="apptReason" placeholder="e.g. Fever, Headache, Check-up, Medical Certificate..."></textarea>
+            <div class="error-message" id="reasonError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Please provide a reason for your appointment.</span>
+            </div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="bookAppointment()">
+            <i class="fas fa-check"></i> Confirm Booking
+        </button>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Success!</span></div>
+
+<script>
+let loggedStudent = null;
+const CLINIC_OPEN_HOUR = 8;   // 8:00 AM
+const CLINIC_CLOSE_HOUR = 17; // 5:00 PM
+
+function init() {
+    loggedStudent = JSON.parse(localStorage.getItem("loggedStudent"));
+    if (!loggedStudent) {
+        window.location.href = "student-login.html";
+        return;
+    }
+    document.getElementById("welcomeMsg").innerHTML =
+        'Welcome, <strong>' + (loggedStudent.firstname || "Student") + '</strong>';
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('apptDate').setAttribute('min', today);
+
+    // Initialize validation
+    validateDate();
+}
+
+function goBack() { window.location.href = "student-dashboard.html"; }
+
+function showToast(msg, isError = false) {
+    const t = document.getElementById("toast");
+    document.getElementById("toastMsg").textContent = msg;
+    t.className = isError ? "toast error active" : "toast active";
+    setTimeout(() => t.classList.remove("active"), 3000);
+}
+
+/* ════════════════════════════════════════════════════════════
+   DATE & TIME VALIDATION
+════════════════════════════════════════════════════════════ */
+
+function validateDate() {
+    const dateInput = document.getElementById("apptDate");
+    const dateError = document.getElementById("dateError");
+    const selectedDate = dateInput.value;
+
+    if (!selectedDate) {
+        dateInput.classList.remove("error", "valid");
+        dateError.classList.remove("show");
+        return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+
+    // Check if past date
+    if (selected < today) {
+        dateInput.classList.add("error");
+        dateInput.classList.remove("valid");
+        dateError.classList.add("show");
+        showToast("Cannot book past dates!", true);
+        return false;
+    }
+
+    // Valid date
+    dateInput.classList.remove("error");
+    dateInput.classList.add("valid");
+    dateError.classList.remove("show");
+
+    // Re-validate time if date is today (to check if selected time is past)
+    validateTime();
+
+    return true;
+}
+
+function validateTime() {
+    const timeInput = document.getElementById("apptTime");
+    const timeError = document.getElementById("timeError");
+    const timeErrorText = document.getElementById("timeErrorText");
+    const selectedTime = timeInput.value;
+    const selectedDate = document.getElementById("apptDate").value;
+
+    if (!selectedTime) {
+        timeInput.classList.remove("error", "valid");
+        timeError.classList.remove("show");
+        return false;
+    }
+
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+
+    // Check clinic hours (8:00 - 17:00)
+    if (hours < CLINIC_OPEN_HOUR || hours >= CLINIC_CLOSE_HOUR) {
+        timeInput.classList.add("error");
+        timeInput.classList.remove("valid");
+        timeErrorText.textContent = `Clinic hours are ${CLINIC_OPEN_HOUR}:00 AM - ${CLINIC_CLOSE_HOUR - 12}:00 PM only.`;
+        timeError.classList.add("show");
+        return false;
+    }
+
+    // If today, check if time is in the past
+    if (selectedDate) {
+        const today = new Date().toISOString().split('T')[0];
+        if (selectedDate === today) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            if (hours < currentHour || (hours === currentHour && minutes <= currentMinute)) {
+                timeInput.classList.add("error");
+                timeInput.classList.remove("valid");
+                timeErrorText.textContent = "Cannot book past times for today. Please select a future time.";
+                timeError.classList.add("show");
+                showToast("Cannot book past times!", true);
+                return false;
+            }
+        }
+    }
+
+    // Valid time
+    timeInput.classList.remove("error");
+    timeInput.classList.add("valid");
+    timeError.classList.remove("show");
+    return true;
+}
+
+function validateReason() {
+    const reasonInput = document.getElementById("apptReason");
+    const reasonError = document.getElementById("reasonError");
+    const reason = reasonInput.value.trim();
+
+    if (!reason) {
+        reasonInput.classList.add("error");
+        reasonError.classList.add("show");
+        return false;
+    }
+
+    reasonInput.classList.remove("error");
+    reasonError.classList.remove("show");
+    return true;
+}
+
+/* ── Push a notification into staffNotifications so staff sees it ── */
+function notifyStaff(appointment) {
+    let staffNotifs = JSON.parse(localStorage.getItem("staffNotifications")) || [];
+
+    // Avoid duplicates
+    const alreadyExists = staffNotifs.some(
+        n => n.appointmentId === appointment.id && n.type === "new-patient"
+    );
+    if (alreadyExists) return;
+
+    const notif = {
+        id:            Date.now() + Math.random(),
+        type:          "new-patient",
+        title:         "🎉 New Client Booking!",
+        message:       `${appointment.studentName} has booked an appointment and is waiting for your approval.`,
+        details: {
+            patientName: appointment.studentName,
+            studentId:   appointment.studentId,
+            date:        appointment.date,
+            time:        appointment.time,
+            complaint:   appointment.chiefComplaint || "General consultation",
+            status:      "Pending"
+        },
+        appointmentId: appointment.id,
+        read:          false,
+        createdAt:     new Date().toISOString(),
+        action: {
+            text:       "Review & Accept",
+            link:       "staff-appointments.html",
+            actionType: "view-appointment"
+        }
+    };
+
+    staffNotifs.unshift(notif);
+    localStorage.setItem("staffNotifications", JSON.stringify(staffNotifs));
+}
+
+function bookAppointment() {
+    const date   = document.getElementById("apptDate").value;
+    const time   = document.getElementById("apptTime").value;
+    const reason = document.getElementById("apptReason").value.trim();
+
+    // Validate all fields
+    const isDateValid = validateDate();
+    const isTimeValid = validateTime();
+    const isReasonValid = validateReason();
+
+    if (!isDateValid || !isTimeValid || !isReasonValid) {
+        showToast("Please fix the errors before booking.", true);
+        return;
+    }
+
+    // Final validation checks
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+        showToast("Cannot book past dates!", true);
+        return;
+    }
+
+    // Check time is within clinic hours
+    const [hours, minutes] = time.split(':').map(Number);
+    if (hours < CLINIC_OPEN_HOUR || hours >= CLINIC_CLOSE_HOUR) {
+        showToast(`Clinic hours are ${CLINIC_OPEN_HOUR}:00 AM - ${CLINIC_CLOSE_HOUR - 12}:00 PM only!`, true);
+        return;
+    }
+
+    // If today, check if time is in the past
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date === todayStr) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        if (hours < currentHour || (hours === currentHour && minutes <= currentMinute)) {
+            showToast("Cannot book past times! Please select a future time.", true);
+            return;
+        }
+    }
+
+    // Duplicate check
+    let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    const existing = appointments.find(a =>
+        a.studentId === loggedStudent.studentid &&
+        a.date === date &&
+        (a.status === "Pending" || a.status === "Accepted")
+    );
+    if (existing) {
+        showToast("You already have an appointment for this date. Please cancel it first or choose a different date.", true);
+        return;
+    }
+
+    const appointmentId = Date.now();
+
+    const appointment = {
+        id:               appointmentId,
+        studentId:        loggedStudent.studentid,
+        studentName:      loggedStudent.firstname + " " + loggedStudent.lastname,
+        studentFirstName: loggedStudent.firstname,
+        studentLastName:  loggedStudent.lastname,
+        studentCourse:    loggedStudent.course    || 'N/A',
+        studentYear:      loggedStudent.year      || 'N/A',
+        studentSex:       loggedStudent.sex       || 'N/A',
+        studentContact:   loggedStudent.contact   || 'N/A',
+        studentEmail:     loggedStudent.email     || 'N/A',
+        studentBirthdate: loggedStudent.birthdate || '',
+        date:             date,
+        time:             time,
+        chiefComplaint:   reason,
+        reason:           reason,
+        status:           "Pending",
+        createdAt:        new Date().toISOString()
+    };
+
+    // Save appointment
+    appointments.push(appointment);
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+
+    // Immediately notify staff
+    notifyStaff(appointment);
+
+    // Show success
+    const successMsg = document.getElementById("successMsg");
+    successMsg.style.display = "flex";
+    setTimeout(() => { successMsg.style.display = "none"; }, 4000);
+
+    // Clear form
+    document.getElementById("apptDate").value  = "";
+    document.getElementById("apptTime").value  = "";
+    document.getElementById("apptReason").value = "";
+
+    // Reset validation states
+    document.getElementById("apptDate").classList.remove("valid", "error");
+    document.getElementById("apptTime").classList.remove("valid", "error");
+    document.getElementById("apptReason").classList.remove("error");
+
+    showToast("Appointment booked! Staff has been notified.");
+}
+
+window.onload = init;
+
+document.addEventListener('DOMContentLoaded', function () {
+    const reasonField = document.getElementById("apptReason");
+    if (reasonField) {
+        reasonField.addEventListener("keypress", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                bookAppointment();
+            }
+        });
+
+        // Real-time validation
+        reasonField.addEventListener("blur", validateReason);
+        reasonField.addEventListener("input", function() {
+            if (this.value.trim()) {
+                this.classList.remove("error");
+                document.getElementById("reasonError").classList.remove("show");
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>All Appointments - Staff | CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F4C2A1 0%, #D4A574 100%); min-height: 100vh; }
+
+.header { background: rgba(255,245,238,0.95); color: #5D4037; padding: 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(93,64,55,0.15); }
+.header h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.back-btn { background: none; border: none; color: #8B4513; font-size: 20px; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; transition: all 0.3s; }
+.back-btn:hover { background: rgba(139,69,19,0.1); }
+
+.filter-tabs { display: flex; gap: 10px; padding: 15px; overflow-x: auto; max-width: 800px; margin: 0 auto; }
+.filter-tab { padding: 10px 20px; background: rgba(255,255,255,0.9); border: 2px solid transparent; border-radius: 25px; cursor: pointer; font-weight: 600; color: #5D4037; transition: all 0.3s; white-space: nowrap; }
+.filter-tab:hover { border-color: #8B4513; }
+.filter-tab.active { background: #8B4513; color: white; }
+
+.container { padding: 15px; max-width: 800px; margin: 0 auto; }
+
+.stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+.stat-box { background: rgba(255,255,255,0.95); padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(93,64,55,0.1); }
+.stat-number { font-size: 24px; font-weight: 700; color: #5D4037; }
+.stat-label { font-size: 12px; color: #8B4513; text-transform: uppercase; }
+
+.appointment-list { display: flex; flex-direction: column; gap: 15px; }
+.appointment-item { background: rgba(255,255,255,0.95); padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(93,64,55,0.1); border-left: 4px solid #8B4513; transition: all 0.3s; }
+.appointment-item:hover { transform: translateX(5px); box-shadow: 0 6px 20px rgba(93,64,55,0.15); }
+.appointment-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.student-info { display: flex; align-items: center; gap: 12px; }
+.student-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+.student-details h4 { font-size: 17px; color: #5D4037; font-weight: 700; }
+.student-details p { font-size: 13px; color: #8B4513; }
+.appointment-meta { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+.appointment-date { display: flex; align-items: center; gap: 6px; color: #5D4037; font-weight: 600; font-size: 14px; }
+
+.status { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.status.pending   { background: #FFF3E0; color: #F57C00; }
+.status.accepted  { background: #E8F5E9; color: #388E3C; }
+.status.completed { background: #E3F2FD; color: #1976D2; }
+.status.rejected  { background: #FFEBEE; color: #C62828; }
+.status.cancelled { background: #FFEBEE; color: #C62828; text-decoration: line-through; }
+
+.appointment-reason { background: #FFF8F0; padding: 12px; border-radius: 10px; color: #5D4037; font-size: 14px; margin-bottom: 12px; }
+.appointment-reason strong { color: #8B4513; }
+
+.action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+.btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-view     { background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%); color: white; }
+.btn-accept   { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); color: white; }
+.btn-complete { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; }
+.btn-reject   { background: linear-gradient(135deg, #f44336 0%, #C62828 100%); color: white; }
+.btn-delete   { background: linear-gradient(135deg, #757575 0%, #424242 100%); color: white; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #8B4513; opacity: 0.7; }
+.empty-state i { font-size: 64px; margin-bottom: 20px; }
+
+/* Queue badge shown on accepted cards */
+.queue-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #E8F5E9; color: #388E3C;
+    padding: 8px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; margin-top: 10px;
+}
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 300; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+.modal-overlay.active { display: flex; }
+.modal-content { background: rgba(255,245,238,0.98); border-radius: 24px; padding: 30px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #E8D5C4; }
+.modal-title { font-size: 22px; font-weight: 700; color: #5D4037; display: flex; align-items: center; gap: 10px; }
+.close-modal { background: none; border: none; font-size: 24px; color: #8B4513; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.close-modal:hover { background: rgba(139,69,19,0.1); }
+
+.student-profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding: 20px; background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%); border-radius: 16px; color: white; }
+.student-profile-avatar { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 3px solid rgba(255,255,255,0.3); }
+.student-profile-info h3 { font-size: 20px; margin-bottom: 5px; }
+.student-profile-info p { font-size: 14px; opacity: 0.9; }
+
+.info-section { margin-bottom: 20px; }
+.info-section-title { font-size: 14px; color: #8B4513; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-item { background: white; padding: 12px 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.info-label { font-size: 11px; color: #8B4513; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 600; }
+.info-value { font-size: 14px; color: #5D4037; font-weight: 500; }
+
+.appointment-history { background: #FFF8F0; padding: 15px; border-radius: 12px; margin-top: 15px; }
+.history-title { font-size: 13px; color: #8B4513; font-weight: 700; margin-bottom: 10px; }
+.history-item { padding: 10px; background: white; border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: #5D4037; }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: #4CAF50; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); display: none; align-items: center; gap: 10px; font-weight: 600; z-index: 400; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.active { display: flex; }
+.toast.error { background: #f44336; }
+
+@media (max-width: 600px) {
+    .stats-bar { grid-template-columns: 1fr; }
+    .action-buttons { grid-template-columns: 1fr 1fr; }
+    .appointment-header { flex-direction: column; align-items: flex-start; }
+    .appointment-meta { align-items: flex-start; }
+    .info-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="goTo('staff-dashboard.html')"><i class="fas fa-arrow-left"></i></button>
+    <h2><i class="fas fa-calendar-check" style="color: #8B4513;"></i> All Appointments</h2>
+    <div style="width: 40px;"></div>
+</div>
+
+<div class="filter-tabs">
+    <div class="filter-tab active" onclick="filterAppointments('all', this)">All</div>
+    <div class="filter-tab" onclick="filterAppointments('pending', this)">Pending</div>
+    <div class="filter-tab" onclick="filterAppointments('accepted', this)">Accepted</div>
+    <div class="filter-tab" onclick="filterAppointments('completed', this)">Completed</div>
+</div>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-box"><div class="stat-number" id="totalCount">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-box"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">Pending</div></div>
+        <div class="stat-box"><div class="stat-number" id="acceptedCount">0</div><div class="stat-label">Accepted</div></div>
+    </div>
+    <div class="appointment-list" id="appointmentsContainer">
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Appointments</h3>
+            <p>No appointments have been booked yet.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Modal -->
+<div class="modal-overlay" id="studentModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-user-circle"></i> Student Information</div>
+            <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="studentModalContent"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Success!</span></div>
+
+<script>
+let loggedStaff  = JSON.parse(localStorage.getItem("loggedStaff")) || { name: "Admin", role: "Administrator" };
+let currentFilter = 'all';
+const $  = id => document.getElementById(id);
+const goTo = url => window.location.href = url;
+
+/* ── Init ──────────────────────────────────────────────────────── */
+window.onload = () => {
+    loadAppointments();
+    // Re-render if another tab changes localStorage
+    window.addEventListener('storage', e => {
+        if (e.key === 'appointments' || e.key === 'queue') loadAppointments();
+    });
+};
+
+/* ── Toast ─────────────────────────────────────────────────────── */
+function showToast(msg, isError = false) {
+    const t = $('toast');
+    $('toastMsg').textContent = msg;
+    t.className = isError ? 'toast error active' : 'toast active';
+    setTimeout(() => t.classList.remove('active'), 3000);
+}
+
+/* ── Modal ─────────────────────────────────────────────────────── */
+const closeModal = () => {
+    $('studentModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+};
+
+/* ── Student helpers ───────────────────────────────────────────── */
+function getStudentInfo(studentId) {
+    const accounts = JSON.parse(localStorage.getItem('studentAccounts')) || [];
+    return accounts.find(s => s.studentid === studentId) || null;
+}
+
+/* ── Notification helpers ──────────────────────────────────────── */
+function deleteRelatedNotifications(appointmentId) {
+    let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    const before = notifications.length;
+    notifications = notifications.filter(n => n.appointmentId !== appointmentId);
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+    return before - notifications.length;
+}
+
+function updateNotificationStatus(appointment, newStatus) {
+    let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    notifications = notifications.filter(n => n.appointmentId !== appointment.id);
+
+    const titles = {
+        Accepted:  'Appointment Accepted',
+        Completed: 'Visit Completed',
+        Rejected:  'Appointment Rejected',
+        Cancelled: 'Appointment Cancelled'
+    };
+    const messages = {
+        Accepted:  `Your appointment for ${appointment.chiefComplaint || 'consultation'} on ${formatDate(appointment.date)} at ${appointment.time} was accepted. Please wait for your queue number.`,
+        Completed: `Your visit on ${formatDate(appointment.date)} has been completed.`,
+        Rejected:  `Your appointment for ${appointment.chiefComplaint || 'consultation'} on ${formatDate(appointment.date)} was rejected.`,
+        Cancelled: `Your appointment for ${appointment.chiefComplaint || 'consultation'} on ${formatDate(appointment.date)} was cancelled.`
+    };
+
+    notifications.push({
+        id:            Date.now(),
+        studentId:     appointment.studentId,
+        appointmentId: appointment.id,
+        title:         titles[newStatus],
+        message:       messages[newStatus],
+        type:          'appointment',
+        read:          false,
+        createdAt:     new Date().toISOString()
+    });
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+}
+
+/* ── Load & render ─────────────────────────────────────────────── */
+function loadAppointments() {
+    const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+    $('totalCount').textContent    = appointments.length;
+    $('pendingCount').textContent  = appointments.filter(a => a.status === 'Pending').length;
+    $('acceptedCount').textContent = appointments.filter(a => a.status === 'Accepted').length;
+
+    let filtered = currentFilter === 'all'
+        ? appointments
+        : appointments.filter(a => a.status.toLowerCase() === currentFilter);
+
+    // Pending first, then newest
+    filtered.sort((a, b) => {
+        if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+        if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+        return new Date(b.date) - new Date(a.date);
+    });
+
+    const container = $('appointmentsContainer');
+
+    if (!filtered.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No ${currentFilter !== 'all' ? currentFilter : ''} Appointments</h3>
+                <p>${currentFilter === 'all' ? 'No appointments booked yet.' : `No ${currentFilter} appointments found.`}</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(appt => {
+        // ── Action buttons per status ──
+        let buttons = '';
+        if (appt.status === 'Pending') {
+            buttons = `
+                <button class="btn btn-accept" onclick="acceptAppointment(${appt.id})">
+                    <i class="fas fa-check"></i> Accept
+                </button>
+                <button class="btn btn-reject" onclick="updateStatus(${appt.id}, 'Rejected')">
+                    <i class="fas fa-times"></i> Reject
+                </button>`;
+        } else if (appt.status === 'Accepted') {
+            buttons = `
+                <button class="btn btn-complete" onclick="updateStatus(${appt.id}, 'Completed')">
+                    <i class="fas fa-check-double"></i> Complete
+                </button>
+                <button class="btn btn-delete" onclick="deleteAppointment(${appt.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>`;
+        } else if (appt.status === 'Cancelled') {
+            buttons = `
+                <button class="btn btn-delete" onclick="deleteAppointment(${appt.id})">
+                    <i class="fas fa-trash"></i> Remove
+                </button>`;
+        } else {
+            buttons = `
+                <button class="btn btn-delete" onclick="deleteAppointment(${appt.id})">
+                    <i class="fas fa-trash"></i> Delete
+                </button>`;
+        }
+
+        // Queue badge for accepted appointments
+        const queueBadge = appt.status === 'Accepted'
+            ? `<div class="queue-badge"><i class="fas fa-list-ol"></i> Added to queue — manage in Queue Management</div>`
+            : '';
+
+        return `
+            <div class="appointment-item" id="appt-${appt.id}">
+                <div class="appointment-header">
+                    <div class="student-info">
+                        <div class="student-avatar"><i class="fas fa-user"></i></div>
+                        <div class="student-details">
+                            <h4>${appt.studentName || 'Unknown'}</h4>
+                            <p>ID: ${appt.studentId} | ${appt.studentCourse || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div class="appointment-meta">
+                        <span class="status ${appt.status.toLowerCase()}">
+                            <i class="fas fa-circle" style="font-size:8px;"></i> ${appt.status}
+                        </span>
+                        <div class="appointment-date">
+                            <i class="fas fa-calendar-day"></i>
+                            ${formatDate(appt.date)} at ${appt.time}
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-view" onclick="viewStudentInfo('${appt.studentId}')"
+                        style="width:100%;margin-bottom:10px;">
+                    <i class="fas fa-eye"></i> View Student Info
+                </button>
+
+                <div class="appointment-reason">
+                    <strong><i class="fas fa-clipboard-list"></i> Reason:</strong>
+                    ${appt.chiefComplaint || appt.reason || 'Not specified'}
+                    ${appt.symptoms ? `<br><small><i class="fas fa-heartbeat"></i> Symptoms: ${appt.symptoms}</small>` : ''}
+                </div>
+
+                <div class="action-buttons">${buttons}</div>
+                ${queueBadge}
+            </div>`;
+    }).join('');
+}
+
+function filterAppointments(status, element) {
+    currentFilter = status;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    element.classList.add('active');
+    loadAppointments();
+}
+
+/* ── Accept appointment ────────────────────────────────────────────
+ *  ONLY updates appointment status + adds student to the queue.
+ *  Does NOT touch healthRecords at all.
+ * ─────────────────────────────────────────────────────────────── */
+function acceptAppointment(appointmentId) {
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    const appt = appointments.find(a => a.id === appointmentId);
+    if (!appt) return showToast('Appointment not found!', true);
+
+    // 1. Mark appointment as Accepted
+    appt.status = 'Accepted';
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+
+    // 2. Add to queue as "reserved" (queue management handles the rest)
+    const today = new Date().toISOString().split('T')[0];
+    let queue   = JSON.parse(localStorage.getItem('queue')) || [];
+
+    const alreadyInQueue = queue.some(
+        q => q.appointmentId === appointmentId && q.date === today
+    );
+
+    if (!alreadyInQueue) {
+        queue.push({
+            id:             Date.now() + Math.random(),
+            appointmentId:  appointmentId,
+            studentId:      appt.studentId,
+            studentName:    appt.studentName,
+            studentCourse:  appt.studentCourse,
+            date:           today,
+            time:           appt.time,
+            status:         'reserved',           // staff queue management promotes to 'waiting'
+            chiefComplaint: appt.chiefComplaint || appt.reason || 'Consultation',
+            queueNumber:    null,
+            addedAt:        new Date().toISOString()
+        });
+        localStorage.setItem('queue', JSON.stringify(queue));
+    }
+
+    // 3. Notify student
+    updateNotificationStatus(appt, 'Accepted');
+
+    showToast('Appointment accepted! Student added to queue.');
+    loadAppointments();
+}
+
+/* ── Update status (Complete / Reject) ─────────────────────────── */
+function updateStatus(appointmentId, status) {
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    const appt = appointments.find(a => a.id === appointmentId);
+    if (!appt) return;
+
+    appt.status = status;
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+
+    // If completed, also mark the queue item as completed
+    if (status === 'Completed') {
+        let queue = JSON.parse(localStorage.getItem('queue')) || [];
+        const qItem = queue.find(q => q.appointmentId === appointmentId);
+        if (qItem) {
+            qItem.status      = 'completed';
+            qItem.completedAt = new Date().toISOString();
+            localStorage.setItem('queue', JSON.stringify(queue));
+        }
+    }
+
+    updateNotificationStatus(appt, status);
+    showToast(`Appointment ${status.toLowerCase()}!`);
+    loadAppointments();
+}
+
+/* ── Delete appointment ────────────────────────────────────────────
+ *  Removes appointment + its queue entry.
+ *  Does NOT touch healthRecords — those are managed separately.
+ * ─────────────────────────────────────────────────────────────── */
+function deleteAppointment(appointmentId) {
+    // Remove appointment
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    appointments = appointments.filter(a => a.id !== appointmentId);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+
+    // Remove from queue
+    let queue = JSON.parse(localStorage.getItem('queue')) || [];
+    queue = queue.filter(q => q.appointmentId !== appointmentId);
+    localStorage.setItem('queue', JSON.stringify(queue));
+
+    // Remove related notifications
+    deleteRelatedNotifications(appointmentId);
+
+    showToast('Appointment deleted!');
+    loadAppointments();
+}
+
+/* ── View student info modal ───────────────────────────────────── */
+function viewStudentInfo(studentId) {
+    let student = getStudentInfo(studentId);
+
+    // Fallback: build from appointment data if not in studentAccounts
+    if (!student) {
+        const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        const appt = appointments.find(a => a.studentId === studentId);
+        if (appt) {
+            student = {
+                studentid:  appt.studentId,
+                firstname:  appt.studentFirstName || appt.studentName?.split(' ')[0] || '',
+                lastname:   appt.studentLastName  || appt.studentName?.split(' ').slice(1).join(' ') || '',
+                middlename: appt.studentMiddleName || '',
+                course:     appt.studentCourse,
+                year:       appt.studentYear,
+                sex:        appt.studentSex,
+                contact:    appt.studentContact,
+                email:      appt.studentEmail,
+                birthdate:  appt.studentBirthdate
+            };
+        }
+    }
+
+    if (!student) return showToast('Student not found!', true);
+
+    const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    const history = appointments.filter(a => a.studentId === studentId);
+
+    $('studentModalContent').innerHTML = `
+        <div class="student-profile-header">
+            <div class="student-profile-avatar"><i class="fas fa-user-graduate"></i></div>
+            <div class="student-profile-info">
+                <h3>${student.firstname} ${student.lastname}</h3>
+                <p><i class="fas fa-id-card"></i> ${student.studentid}</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-user"></i> Personal Info</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">${student.firstname} ${student.middlename || ''} ${student.lastname}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Birthdate</div>
+                    <div class="info-value">${formatDate(student.birthdate) || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Sex</div>
+                    <div class="info-value">${student.sex || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">${student.email || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-graduation-cap"></i> Academic Info</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Course</div>
+                    <div class="info-value">${student.course || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Year</div>
+                    <div class="info-value">${student.year || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-phone"></i> Contact</div>
+            <div class="info-grid" style="grid-template-columns:1fr;">
+                <div class="info-item">
+                    <div class="info-label">Contact Number</div>
+                    <div class="info-value">${student.contact || 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+
+        ${history.length ? `
+        <div class="appointment-history">
+            <div class="history-title"><i class="fas fa-history"></i> Appointment History (${history.length} total)</div>
+            ${history.slice(0, 3).map(h => `
+                <div class="history-item">
+                    <strong>${formatDate(h.date)}</strong> — ${h.chiefComplaint || 'Consultation'}
+                    <span style="float:right;color:${h.status==='Completed'?'#388E3C':h.status==='Accepted'?'#1976D2':'#F57C00'};font-weight:600;">
+                        ${h.status}
+                    </span>
+                </div>
+            `).join('')}
+            ${history.length > 3 ? `<div style="text-align:center;margin-top:10px;color:#8B4513;font-size:12px;">…and ${history.length - 3} more</div>` : ''}
+        </div>` : ''}
+    `;
+
+    $('studentModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+/* ── Utilities ─────────────────────────────────────────────────── */
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

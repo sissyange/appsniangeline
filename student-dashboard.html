@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CampusCare+ Student Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#D4A574">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+    padding: 15px;
+    overflow-x: hidden;
+}
+
+/* Main Container - Same card style as login */
+.main-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    background: rgba(255, 245, 238, 0.95);
+    border-radius: 24px;
+    box-shadow: 0 25px 80px rgba(93, 64, 55, 0.2),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.6s ease-out;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header Section */
+.header-section {
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    padding: 25px 20px;
+    text-align: center;
+    color: white;
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-icon i {
+    font-size: 22px;
+    color: white;
+}
+
+.header-section h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+}
+
+.welcome-text {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Clinic Status Indicator */
+.clinic-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.clinic-status-indicator.open {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+.clinic-status-indicator.closed {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: rgba(244, 67, 54, 0.5);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9E9E9E;
+    transition: all 0.3s ease;
+}
+
+.clinic-status-indicator.open .status-dot {
+    background: #4CAF50;
+    animation: blink-green 1.5s infinite;
+}
+
+.clinic-status-indicator.closed .status-dot {
+    background: #f44336;
+}
+
+@keyframes blink-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.status-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Content Section */
+.content-section {
+    padding: 20px;
+}
+
+/* Stats Section - 3 small boxes */
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 12px 6px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.08);
+    text-align: center;
+    border: 2px solid #E8D5C4;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: #8B4513;
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
+}
+
+.stat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin: 0 auto 6px;
+}
+
+.stat-icon.appointments {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+.stat-icon.records {
+    background: #E8F5E9;
+    color: #388E3C;
+}
+
+.stat-icon.notifications {
+    background: #FFF3E0;
+    color: #F57C00;
+}
+
+.stat-label {
+    font-size: 8px;
+    color: #8B4513;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #5D4037;
+    line-height: 1.2;
+}
+
+.stat-subtext {
+    font-size: 7px;
+    color: #8B4513;
+    opacity: 0.7;
+}
+
+/* Menu Section Title */
+.menu-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #5D4037;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 4px;
+}
+
+.menu-title i {
+    color: #8B4513;
+}
+
+/* Menu Grid - 2 columns */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.menu-card {
+    background: white;
+    padding: 14px 10px;
+    border-radius: 12px;
+    border: 2px solid #E8D5C4;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    text-align: center;
+}
+
+.menu-card:active {
+    transform: scale(0.96);
+}
+
+.menu-card:hover {
+    border-color: #8B4513;
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
+    transform: translateY(-2px);
+}
+
+.menu-card.logout {
+    border-color: #EF9A9A;
+    background: #FFEBEE;
+    grid-column: span 2;
+    flex-direction: row;
+    justify-content: center;
+    padding: 12px;
+}
+
+.menu-card.logout:hover {
+    border-color: #C62828;
+    background: #FFCDD2;
+}
+
+.menu-icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+}
+
+.menu-card.logout .menu-icon-circle {
+    background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
+    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #f44336;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.menu-card-content {
+    flex: 1;
+}
+
+.menu-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5D4037;
+    margin-bottom: 2px;
+}
+
+.menu-card-desc {
+    font-size: 9px;
+    color: #8B4513;
+    opacity: 0.8;
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    body {
+        padding: 10px;
+    }
+    
+    .main-container {
+        border-radius: 20px;
+    }
+    
+    .header-section {
+        padding: 20px 15px;
+    }
+    
+    .content-section {
+        padding: 15px;
+    }
+    
+    .stats-section {
+        gap: 8px;
+    }
+    
+    .stat-card {
+        padding: 10px 4px;
+        border-radius: 10px;
+    }
+    
+    .stat-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
+    
+    .stat-value {
+        font-size: 16px;
+    }
+    
+    .menu-grid {
+        gap: 8px;
+    }
+    
+    .menu-card {
+        padding: 12px 8px;
+        border-radius: 10px;
+    }
+    
+    .menu-icon-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .menu-card-title {
+        font-size: 10px;
+    }
+    
+    .menu-card-desc {
+        font-size: 8px;
+    }
+    
+    .notification-badge {
+        font-size: 8px;
+        min-width: 14px;
+        height: 14px;
+        top: -3px;
+        right: -3px;
+    }
+}
+
+/* Larger screens */
+@media (min-width: 480px) {
+    .main-container {
+        max-width: 420px;
+    }
+    
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="main-container">
+    
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="logo-icon">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <h2>CampusCare+</h2>
+        <p class="welcome-text" id="welcomeMsg">Welcome</p>
+
+        <!-- Clinic Status Indicator -->
+        <div class="clinic-status-indicator" id="clinicStatusIndicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="clinicStatusText">Checking clinic...</span>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+
+        <!-- Stats Overview -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon appointments">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-label">Appointments</div>
+                <div class="stat-value" id="appointmentCount">0</div>
+                <div class="stat-subtext">Bookings</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon records">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <div class="stat-label">Records</div>
+                <div class="stat-value" id="recordCount">0</div>
+                <div class="stat-subtext">Visits</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon notifications">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-label">Alerts</div>
+                <div class="stat-value" id="notificationCount">0</div>
+                <div class="stat-subtext">Unread</div>
+            </div>
+        </div>
+
+        <!-- Menu Section -->
+        <div class="menu-title">
+            <i class="fas fa-th-large"></i> Menu
+        </div>
+        
+        <div class="menu-grid">
+            <div class="menu-card" onclick="bookAppointment()">
+                <div class="menu-icon-circle">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="menu-card-content">
+                    <div class="menu-card-title">Book Appointment</div>
+                    <div class="menu-card-desc">Schedule clinic visit</div>
+                </div>
+            </div>
+            
+            <div class="menu-card" onclick="healthRecords()">
+                <div class="menu-icon-circle">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="menu-card-content">
+                    <div class="menu-card-title">Health Records</div>
+                    <div class="menu-card-desc">View medical history</div>
+                </div>
+            </div>
+            
+            <div class="menu-card" onclick="queueStatus()">
+                <div class="menu-icon-circle">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="menu-card-content">
+                    <div class="menu-card-title">Queue Status</div>
+                    <div class="menu-card-desc">Check queue number</div>
+                </div>
+            </div>
+            
+            <div class="menu-card" onclick="notifications()">
+                <div class="menu-icon-circle" style="position: relative;">
+                    <i class="fas fa-bell"></i>
+                    <!-- Notification Badge -->
+                    <span class="notification-badge" id="menuNotifBadge" style="display: none;">0</span>
+                </div>
+                <div class="menu-card-content">
+                    <div class="menu-card-title">Notifications</div>
+                    <div class="menu-card-desc">View updates & alerts</div>
+                </div>
+            </div>
+            
+            <div class="menu-card logout" onclick="logout()">
+                <div class="menu-icon-circle">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div class="menu-card-content">
+                    <div class="menu-card-title">Log Out</div>
+                    <div class="menu-card-desc">Exit account</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Load logged-in student
+let loggedStudent = JSON.parse(localStorage.getItem("loggedStudent"));
+if(!loggedStudent){
+    window.location.href = "student-login.html";
+} else {
+    document.getElementById("welcomeMsg").innerHTML = 
+        'Welcome, <strong>' + (loggedStudent.firstname || "Student") + '</strong>';
+    loadDashboardData();
+    checkClinicStatus();
+}
+
+// Check clinic status
+function checkClinicStatus() {
+    const clinicStatus = JSON.parse(localStorage.getItem("clinicStatus"));
+    const indicator = document.getElementById("clinicStatusIndicator");
+    const dot = document.getElementById("statusDot");
+    const text = document.getElementById("clinicStatusText");
+
+    if (clinicStatus && clinicStatus.isOpen) {
+        indicator.classList.add("open");
+        indicator.classList.remove("closed");
+        text.textContent = "Clinic is Open";
+    } else {
+        indicator.classList.add("closed");
+        indicator.classList.remove("open");
+        text.textContent = "Clinic is Closed";
+    }
+}
+
+function loadDashboardData() {
+    // Count appointments
+    let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+    let myAppointments = appointments.filter(a => a.studentId === loggedStudent.studentid);
+    document.getElementById("appointmentCount").textContent = myAppointments.length;
+    
+    // Count health records
+    let records = JSON.parse(localStorage.getItem("healthRecords")) || [];
+    let queue = JSON.parse(localStorage.getItem("queue")) || [];
+    let completedFromQueue = queue.filter(q => 
+        q.studentId === loggedStudent.studentid && 
+        (q.status === 'completed' || q.completedAt)
+    );
+    let myRecords = records.filter(r => r.studentId === loggedStudent.studentid);
+    document.getElementById("recordCount").textContent = myRecords.length + completedFromQueue.length;
+    
+    // Count notifications
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+    let myNotifications = notifications.filter(n => n.studentId === loggedStudent.studentid && !n.read);
+    let unreadCount = myNotifications.length;
+    
+    // Update stats card
+    document.getElementById("notificationCount").textContent = unreadCount;
+    
+    // Update menu badge
+    const badge = document.getElementById("menuNotifBadge");
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        badge.style.display = "flex";
+    } else {
+        badge.style.display = "none";
+    }
+}
+
+// Menu Functions
+function bookAppointment(){
+    window.location.href = "book-appointment.html";
+}
+
+function healthRecords(){
+    window.location.href = "health-records.html";
+}
+
+function queueStatus(){
+    window.location.href = "queue-status.html";
+}
+
+function notifications(){
+    window.location.href = "notifications.html";
+}
+
+function logout(){
+    localStorage.removeItem("loggedStudent");
+    window.location.href = "student-login.html";
+}
+
+// Refresh data when page becomes visible
+document.addEventListener("visibilitychange", function() {
+    if (!document.hidden) {
+        loadDashboardData();
+        checkClinicStatus();
+    }
+});
+
+// Check clinic status periodically (every 10 seconds)
+setInterval(checkClinicStatus, 10000);
+</script>
+
+</body>
+</html>

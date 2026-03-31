@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Health Records - CampusCare+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+            min-height: 100vh;
+            color: #5D4037;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(255,245,238,0.98);
+            padding: 16px 20px;
+            position: sticky; top:0; z-index:100;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(139,69,19,0.1);
+            display: flex; align-items:center; justify-content:space-between;
+        }
+        .back-btn {
+            width:40px; height:40px; border-radius:12px; border:none;
+            background:rgba(139,69,19,0.1); color:#8B4513; font-size:18px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+        }
+        .back-btn:active { transform:scale(0.95); }
+        .header-title { font-size:18px; font-weight:700; color:#5D4037; flex:1; text-align:center; margin:0 10px; }
+
+        .main-container { max-width:800px; margin:0 auto; padding:16px; }
+
+        .student-info {
+            background:rgba(255,255,255,0.95); padding:20px; border-radius:20px;
+            box-shadow:0 4px 20px rgba(93,64,55,0.1); margin-bottom:20px;
+            display:flex; align-items:center; gap:16px;
+        }
+        .student-avatar {
+            width:70px; height:70px;
+            background:linear-gradient(135deg,#8B4513 0%,#6E3510 100%);
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            color:white; font-size:28px; font-weight:700; flex-shrink:0;
+        }
+        .student-details h3 { font-size:20px; color:#5D4037; margin-bottom:4px; font-weight:700; }
+        .student-details p  { font-size:14px; color:#8B4513; margin-bottom:2px; opacity:0.9; }
+        .id-highlight {
+            background:linear-gradient(135deg,#E8F5E9 0%,#C8E6C9 100%);
+            padding:4px 10px; border-radius:8px; font-weight:700; color:#2E7D32;
+            display:inline-block; margin-top:4px; font-size:13px;
+        }
+        .id-missing {
+            background:linear-gradient(135deg,#FFEBEE 0%,#FFCDD2 100%);
+            color:#C62828; padding:4px 10px; border-radius:8px; font-weight:600;
+            display:inline-block; margin-top:4px; font-size:13px;
+        }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+        .stat-card {
+            background:rgba(255,255,255,0.95); border-radius:16px; padding:16px;
+            text-align:center; box-shadow:0 2px 8px rgba(93,64,55,0.08);
+        }
+        .stat-icon {
+            width:40px; height:40px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px;
+        }
+        .stat-icon.blue   { background:rgba(59,130,246,0.1);  color:#3B82F6; }
+        .stat-icon.green  { background:rgba(34,197,94,0.1);   color:#22C55E; }
+        .stat-icon.orange { background:rgba(249,115,22,0.1);  color:#F97316; }
+        .stat-number { font-size:24px; font-weight:700; color:#5D4037; margin-bottom:4px; }
+        .stat-label  { font-size:12px; color:#8B4513; opacity:0.8; font-weight:500; }
+
+        .section-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:16px; padding:0 4px;
+        }
+        .section-title {
+            font-size:18px; font-weight:700; color:#5D4037;
+            display:flex; align-items:center; gap:10px;
+        }
+        .record-count {
+            background:#8B4513; color:white; padding:4px 12px;
+            border-radius:20px; font-size:13px; font-weight:600;
+        }
+
+        .records-section {
+            background:rgba(255,255,255,0.95); border-radius:20px; padding:20px;
+            box-shadow:0 4px 20px rgba(93,64,55,0.1);
+        }
+
+        .record-item {
+            background:linear-gradient(135deg,#FFF8F0 0%,#FAD8C1 100%);
+            border-radius:16px; padding:20px; margin-bottom:16px;
+            border-left:4px solid #8B4513; transition:all 0.3s ease; position:relative;
+        }
+        .record-item:hover { transform:translateY(-2px); box-shadow:0 4px 15px rgba(139,69,19,0.15); }
+        .record-item:last-child { margin-bottom:0; }
+
+        /* New record glow */
+        @keyframes newGlow {
+            0%   { border-left-color:#22C55E; box-shadow:0 0 0 0 rgba(34,197,94,0.5); }
+            50%  { border-left-color:#22C55E; box-shadow:0 0 12px 4px rgba(34,197,94,0.25); }
+            100% { border-left-color:#8B4513; box-shadow:none; }
+        }
+        .record-item.new-entry { animation:newGlow 2s ease 2; }
+
+        .record-item.deleting { animation:slideOut 0.3s ease forwards; }
+        @keyframes slideOut {
+            to { opacity:0; transform:translateX(100%); height:0; padding:0; margin:0; }
+        }
+
+        .record-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:16px; flex-wrap:wrap; gap:8px;
+        }
+        .record-date { display:flex; align-items:center; gap:8px; color:#8B4513; font-weight:700; font-size:15px; }
+
+        .record-status {
+            padding:6px 14px; border-radius:20px;
+            font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .record-status.completed   { background:#E8F5E9; color:#2E7D32; }
+        .record-status.waiting     { background:rgba(249,115,22,0.12); color:#F97316; }
+        .record-status.in-progress { background:rgba(59,130,246,0.12);  color:#3B82F6; }
+        .record-status.critical    { background:rgba(239,68,68,0.12);   color:#EF4444; }
+
+        .record-summary { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+        .summary-box { background:white; padding:14px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .summary-label {
+            font-size:11px; color:#8B4513; text-transform:uppercase; letter-spacing:0.5px;
+            margin-bottom:6px; display:flex; align-items:center; gap:6px; font-weight:600;
+        }
+        .summary-value { font-size:14px; color:#5D4037; font-weight:600; line-height:1.4; }
+
+        /* Only "View Details" button — delete is inside the view modal */
+        .record-actions { display:flex; gap:10px; }
+        .view-details-btn {
+            flex:1; padding:12px;
+            background:linear-gradient(135deg,#8B4513 0%,#6E3510 100%);
+            color:white; border:none; border-radius:10px; cursor:pointer;
+            font-size:14px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;
+        }
+        .view-details-btn:hover { transform:translateY(-2px); box-shadow:0 4px 15px rgba(139,69,19,0.3); }
+
+        .empty-state { text-align:center; padding:60px 20px; color:#8B4513; }
+        .empty-icon {
+            width:80px; height:80px; background:rgba(139,69,19,0.1); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            margin:0 auto 20px; font-size:32px; color:#8B4513; opacity:0.5;
+        }
+        .empty-title { font-size:18px; font-weight:600; margin-bottom:8px; color:#5D4037; }
+        .empty-text  { font-size:14px; opacity:0.7; margin-bottom:4px; }
+
+        /* Modals */
+        .modal-overlay {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.6); z-index:200;
+            display:none; justify-content:center; align-items:center;
+            padding:20px; backdrop-filter:blur(5px);
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-content {
+            background:rgba(255,245,238,0.98); border-radius:24px;
+            max-width:600px; width:100%; max-height:90vh; overflow-y:auto;
+            animation:slideUp 0.3s ease; box-shadow:0 25px 80px rgba(0,0,0,0.3);
+            border:1px solid rgba(255,255,255,0.6);
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(50px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .modal-header {
+            background:linear-gradient(135deg,#8B4513 0%,#6E3510 100%);
+            color:white; padding:24px; position:relative;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .modal-title { font-size:20px; font-weight:700; display:flex; align-items:center; gap:10px; }
+        .close-modal {
+            width:36px; height:36px; border-radius:50%; border:none;
+            background:rgba(255,255,255,0.2); color:white; font-size:16px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+        }
+        .close-modal:hover { background:rgba(255,255,255,0.3); }
+        .modal-body { padding:24px; }
+
+        .detail-section { margin-bottom:20px; }
+        .detail-label {
+            font-size:12px; color:#8B4513; text-transform:uppercase; letter-spacing:0.5px;
+            margin-bottom:8px; display:flex; align-items:center; gap:8px; font-weight:700;
+        }
+        .detail-value {
+            background:white; padding:16px; border-radius:12px; color:#5D4037;
+            font-size:15px; line-height:1.6; box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            border-left:3px solid #8B4513;
+        }
+        .modal-actions {
+            display:flex; gap:10px; margin-top:24px; padding-top:20px;
+            border-top:2px solid #E8D5C4;
+        }
+        .modal-close-btn {
+            flex:1; padding:14px; background:#ECEFF1; color:#5D4037;
+            border:none; border-radius:12px; cursor:pointer; font-size:15px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;
+        }
+        .modal-delete-btn {
+            flex:1; padding:14px;
+            background:linear-gradient(135deg,#f44336 0%,#c62828 100%);
+            color:white; border:none; border-radius:12px; cursor:pointer;
+            font-size:15px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.3s;
+        }
+        .modal-delete-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(244,67,54,0.3); }
+
+        .confirm-dialog {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.7); z-index:300;
+            display:none; justify-content:center; align-items:center;
+            padding:20px; backdrop-filter:blur(5px);
+        }
+        .confirm-dialog.active { display:flex; }
+        .confirm-content {
+            background:white; border-radius:20px; padding:30px;
+            max-width:400px; width:100%; text-align:center;
+            animation:slideUp 0.3s ease; box-shadow:0 25px 80px rgba(0,0,0,0.4);
+        }
+        .confirm-icon {
+            width:70px; height:70px;
+            background:linear-gradient(135deg,#FFEBEE 0%,#FFCDD2 100%);
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            margin:0 auto 20px; font-size:32px; color:#f44336;
+        }
+        .confirm-title { font-size:22px; font-weight:700; color:#5D4037; margin-bottom:10px; }
+        .confirm-text  { font-size:15px; color:#8B4513; margin-bottom:25px; line-height:1.5; }
+        .confirm-buttons { display:flex; gap:10px; }
+        .confirm-yes {
+            flex:1; padding:12px;
+            background:linear-gradient(135deg,#f44336 0%,#c62828 100%);
+            color:white; border:none; border-radius:10px; cursor:pointer;
+            font-size:14px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.3s;
+        }
+        .confirm-yes:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(244,67,54,0.3); }
+        .confirm-no {
+            flex:1; padding:12px; background:#ECEFF1; color:#5D4037;
+            border:none; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.3s;
+        }
+        .confirm-no:hover { background:#d5d8da; }
+
+        .toast {
+            position:fixed; bottom:20px; right:20px;
+            background:#4CAF50; color:white; padding:16px 24px; border-radius:12px;
+            box-shadow:0 8px 25px rgba(0,0,0,0.2); display:none; align-items:center;
+            gap:10px; font-weight:600; z-index:400; animation:slideIn 0.3s ease;
+        }
+        .toast.active { display:flex; }
+        .toast.error  { background:#f44336; }
+        @keyframes slideIn {
+            from { transform:translateX(100%); opacity:0; }
+            to   { transform:translateX(0); opacity:1; }
+        }
+
+        @media (max-width:600px) {
+            .main-container { padding:12px; }
+            .student-info { flex-direction:column; text-align:center; }
+            .stats-grid { gap:8px; }
+            .stat-card  { padding:12px; }
+            .stat-number { font-size:20px; }
+            .record-summary { grid-template-columns:1fr; }
+            .modal-actions { flex-direction:column; }
+            .confirm-buttons { flex-direction:column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <i class="fas fa-file-medical" style="color:#8B4513;margin-right:8px;"></i>
+            My Health Records
+        </div>
+        <div style="width:40px;"></div>
+    </div>
+
+    <div class="main-container">
+        <div class="student-info">
+            <div class="student-avatar" id="studentAvatar"><i class="fas fa-user"></i></div>
+            <div class="student-details">
+                <h3 id="studentName">Loading...</h3>
+                <p id="studentId">ID: Loading...</p>
+                <p id="studentCourse">Course: Loading...</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-number" id="totalVisits">0</div>
+                <div class="stat-label">Total Visits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-number" id="completedVisits">0</div>
+                <div class="stat-label">Today's Visits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                <div class="stat-number" id="lastVisitDays">--</div>
+                <div class="stat-label">Days Since Last</div>
+            </div>
+        </div>
+
+        <div class="records-section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-history"></i> Visit History</div>
+                <span class="record-count" id="recordCount">0</span>
+            </div>
+            <div id="recordsList">
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+                    <div class="empty-title">Loading Records...</div>
+                    <div class="empty-text">Please wait while we fetch your health records.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fas fa-file-alt"></i> Visit Details</div>
+                <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fas fa-calendar-day"></i> Date of Visit</div>
+                    <div class="detail-value" id="modalDate">--</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fas fa-stethoscope"></i> Chief Complaint / Symptoms</div>
+                    <div class="detail-value" id="modalDiagnosis">--</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fas fa-clipboard-list"></i> Visit Type</div>
+                    <div class="detail-value" id="modalVisitType">--</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fas fa-user-md"></i> Attending Staff</div>
+                    <div class="detail-value" id="modalDoctor">--</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fas fa-notes-medical"></i> Notes</div>
+                    <div class="detail-value" id="modalNotes">--</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-close-btn"   onclick="closeModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                    <button class="modal-delete-btn"  onclick="confirmRemoveFromModal()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="confirm-dialog" id="confirmDialog">
+        <div class="confirm-content">
+            <div class="confirm-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="confirm-title">Delete Health Record?</div>
+            <div class="confirm-text" id="confirmText">
+                Are you sure you want to delete this visit record? This action cannot be undone.
+            </div>
+            <div class="confirm-buttons">
+                <button class="confirm-yes" onclick="executeRemove()">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+                <button class="confirm-no" onclick="cancelRemove()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMsg">Success!</span>
+    </div>
+
+    <script>
+        let loggedStudent      = null;
+        let recordToRemove     = null;
+        let currentRecordIndex = null;
+        let currentRecords     = [];
+        let knownRecordIds     = new Set();
+
+        function initializePage() {
+            const studentData = getStudentData();
+            if (!studentData) {
+                showToast('Please log in again', true);
+                setTimeout(() => { window.location.href = 'student-login.html'; }, 2000);
+                return;
+            }
+            loggedStudent = studentData;
+            displayStudentInfo();
+            loadHealthRecords();
+
+            // Poll every 10 s — auto-shows new staff records
+            setInterval(checkForNewRecords, 10000);
+        }
+
+        function getStudentData() {
+            let student = null;
+            try {
+                const stored = localStorage.getItem('loggedStudent');
+                if (stored) student = JSON.parse(stored);
+            } catch(e) {}
+
+            if (!student || !student.studentid) {
+                const accounts  = JSON.parse(localStorage.getItem('studentAccounts')) || [];
+                if (student && student.email) {
+                    const match = accounts.find(a => a.email === student.email);
+                    if (match) student = { ...match, ...student };
+                }
+                if (!student || !student.studentid) {
+                    const lastEmail = localStorage.getItem('lastLoggedEmail');
+                    if (lastEmail) {
+                        const match = accounts.find(a => a.email === lastEmail);
+                        if (match) student = match;
+                    }
+                }
+            }
+            return student;
+        }
+
+        function displayStudentInfo() {
+            if (!loggedStudent) return;
+            const fullName = (loggedStudent.firstname || 'Student') + ' ' + (loggedStudent.lastname || '');
+            document.getElementById('studentAvatar').textContent  = getInitials(fullName);
+            document.getElementById('studentName').textContent    = fullName;
+            const sid   = loggedStudent.studentid;
+            const sidEl = document.getElementById('studentId');
+            if (sid && sid.trim() && sid !== 'undefined' && sid !== 'null') {
+                sidEl.innerHTML = 'ID: <span class="id-highlight">' + sid + '</span>';
+            } else {
+                sidEl.innerHTML = 'ID: <span class="id-missing">Not Available</span>';
+            }
+            document.getElementById('studentCourse').textContent =
+                'Course: ' + (loggedStudent.course || loggedStudent.program || 'Not specified');
+        }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+        }
+
+        function goBack() { window.location.href = 'student-dashboard.html'; }
+
+        /* ── Hidden records (student-deleted) ───────────────────────── */
+
+        function isHidden(id) {
+            const hidden = JSON.parse(localStorage.getItem('hiddenHealthRecords')) || [];
+            return hidden.some(h => h.studentId === loggedStudent.studentid && h.recordId === id);
+        }
+
+        /* ── Collect records ─────────────────────────────────────────
+         *
+         *  Single source of truth: the shared "healthRecords" key.
+         *  Staff writes diagnosis + doctor + visitType into every record,
+         *  so we just filter by studentId. No separate legacy/queue
+         *  branches needed — this eliminates the duplication completely.
+         *
+         *  We also still pull from "queue" and "appointments" for backwards
+         *  compatibility with any existing completed entries.
+         * ─────────────────────────────────────────────────────────── */
+        /* ── ID match helper — trims & lowercases to avoid silent mismatches ── */
+        function sameId(a, b) {
+            return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+        }
+
+        function collectRecords() {
+            const seen = new Set();
+            let all    = [];
+
+            const myId = loggedStudent.studentid;
+
+            // 1. PRIMARY: healthRecords — the single shared key staff writes to.
+            //    Show ALL statuses (waiting, in-progress, completed, critical)
+            //    so the student can see their current clinic status in real time.
+            const healthRecords = JSON.parse(localStorage.getItem('healthRecords')) || [];
+            healthRecords
+                .filter(r => sameId(r.studentId, myId) && !isHidden(r.id))
+                .forEach(r => {
+                    if (seen.has(r.id)) return;
+                    seen.add(r.id);
+                    all.push({
+                        id:        r.id,
+                        studentId: r.studentId,
+                        // Use the actual visit date first, fall back to createdAt
+                        date:      r.date || r.createdAt || r.updatedAt || new Date().toISOString(),
+                        diagnosis: r.symptoms  || r.diagnosis || 'General Consultation',
+                        doctor:    r.doctor    || 'CampusCare+ Staff',
+                        notes:     r.notes     || '',
+                        visitType: r.visitType || 'Clinic Visit',
+                        status:    r.status    || 'waiting',
+                        source:    r.source    || 'staff'
+                    });
+                });
+
+            // 2. Legacy: completed queue entries (backwards compat)
+            const queue = JSON.parse(localStorage.getItem('queue')) || [];
+            queue
+                .filter(q => sameId(q.studentId, myId) &&
+                             (q.status === 'completed' || q.status === 'Completed' || q.completedAt))
+                .forEach(q => {
+                    const uid = `queue_${q.id || q.appointmentId}`;
+                    if (seen.has(uid) || isHidden(uid)) return;
+                    seen.add(uid);
+                    all.push({
+                        id:        uid,
+                        studentId: q.studentId,
+                        date:      q.completedAt || q.date || new Date().toISOString(),
+                        diagnosis: q.chiefComplaint || q.reason || 'General Consultation',
+                        doctor:    q.staffName || 'CampusCare+ Staff',
+                        notes:     `Queue #${q.queueNumber || 'N/A'}`,
+                        visitType: q.appointmentType || 'Walk-in',
+                        status:    'completed',
+                        source:    'queue'
+                    });
+                });
+
+            // 3. Legacy: completed appointments (backwards compat)
+            const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+            appointments
+                .filter(a => sameId(a.studentId, myId) &&
+                             (a.status === 'Completed' || a.status === 'completed'))
+                .forEach(a => {
+                    const uid = `appt_${a.id}`;
+                    if (seen.has(uid) || isHidden(uid)) return;
+                    seen.add(uid);
+                    all.push({
+                        id:        uid,
+                        studentId: a.studentId,
+                        date:      a.completedAt || a.date || new Date().toISOString(),
+                        diagnosis: a.reason || a.chiefComplaint || 'General Consultation',
+                        doctor:    a.staffName || a.doctorName || 'CampusCare+ Staff',
+                        notes:     a.notes || `Time: ${a.time || 'N/A'}`,
+                        visitType: 'Appointment',
+                        status:    'completed',
+                        source:    'appointments'
+                    });
+                });
+
+            all.sort((a, b) => new Date(b.date) - new Date(a.date));
+            return all;
+        }
+
+        /* ── Load & render ───────────────────────────────────────────── */
+
+        function loadHealthRecords() {
+            if (!loggedStudent || !loggedStudent.studentid) {
+                document.getElementById('recordsList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon" style="color:#f44336"><i class="fas fa-exclamation-circle"></i></div>
+                        <div class="empty-title">Student ID Required</div>
+                        <div class="empty-text">Cannot load health records without a valid Student ID.</div>
+                    </div>`;
+                return;
+            }
+            const all = collectRecords();
+            all.forEach(r => knownRecordIds.add(r.id));
+            updateStats(all);
+            renderRecords(all);
+            currentRecords = all;
+        }
+
+        /** Poll — only re-renders if there are genuinely new IDs */
+        function checkForNewRecords() {
+            if (!loggedStudent || !loggedStudent.studentid) return;
+            const all    = collectRecords();
+            const newIds = all.map(r => r.id).filter(id => !knownRecordIds.has(id));
+            if (newIds.length > 0) {
+                newIds.forEach(id => knownRecordIds.add(id));
+                updateStats(all);
+                renderRecords(all, new Set(newIds));
+                currentRecords = all;
+                showToast('New health record added by clinic staff!');
+            }
+        }
+
+        function updateStats(records) {
+            document.getElementById('totalVisits').textContent = records.length;
+            const today = new Date();
+            document.getElementById('completedVisits').textContent =
+                records.filter(r => new Date(r.date).toDateString() === today.toDateString()).length;
+            if (records.length > 0) {
+                const diff = Math.ceil(Math.abs(today - new Date(records[0].date)) / 86400000);
+                document.getElementById('lastVisitDays').textContent = diff;
+            } else {
+                document.getElementById('lastVisitDays').textContent = '--';
+            }
+            document.getElementById('recordCount').textContent = records.length;
+        }
+
+        function renderRecords(all, highlightIds = new Set()) {
+            const list = document.getElementById('recordsList');
+            if (all.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+                        <div class="empty-title">No Health Records Yet</div>
+                        <div class="empty-text">Your medical history will appear here after your first clinic visit.</div>
+                        <div class="empty-text" style="font-size:12px;margin-top:8px;opacity:0.5">
+                            Student ID: ${loggedStudent.studentid}
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const statusClass = { completed:'completed', waiting:'waiting', 'in-progress':'in-progress', critical:'critical' };
+            const statusLabel = { completed:'Completed', waiting:'Waiting', 'in-progress':'In Progress', critical:'Critical' };
+
+            list.innerHTML = all.map((record, index) => {
+                const isNew   = highlightIds.has(record.id);
+                const stClass = statusClass[record.status] || 'completed';
+                const stLabel = statusLabel[record.status] || 'Completed';
+                return `
+                <div class="record-item${isNew ? ' new-entry' : ''}" data-index="${index}" id="record-${index}">
+                    <div class="record-header">
+                        <div class="record-date">
+                            <i class="fas fa-calendar-check"></i>
+                            ${formatDate(record.date)}
+                        </div>
+                        <span class="record-status ${stClass}">${stLabel}</span>
+                    </div>
+                    <div class="record-summary">
+                        <div class="summary-box">
+                            <div class="summary-label"><i class="fas fa-stethoscope"></i> Chief Complaint</div>
+                            <div class="summary-value">${truncate(record.diagnosis, 30)}</div>
+                        </div>
+                        <div class="summary-box">
+                            <div class="summary-label"><i class="fas fa-user-md"></i> Attending Staff</div>
+                            <div class="summary-value">${truncate(record.doctor, 25)}</div>
+                        </div>
+                    </div>
+                    <div class="record-actions">
+                        <button class="view-details-btn" onclick="viewDetails(${index})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        /* ── View Details ────────────────────────────────────────────── */
+
+        function viewDetails(index) {
+            currentRecordIndex = index;
+            const r = currentRecords[index];
+            document.getElementById('modalDate').textContent      = formatDate(r.date);
+            document.getElementById('modalDiagnosis').textContent = r.diagnosis  || 'Not specified';
+            document.getElementById('modalVisitType').textContent = r.visitType  || 'Walk-in Consultation';
+            document.getElementById('modalDoctor').textContent    = r.doctor     || 'CampusCare+ Staff';
+            document.getElementById('modalNotes').textContent     = r.notes      || 'No additional notes.';
+            document.getElementById('detailModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentRecordIndex = null;
+        }
+
+        /* ── Delete (from inside view modal only) ────────────────────── */
+
+        function confirmRemoveFromModal() {
+            if (currentRecordIndex === null) return;
+            recordToRemove = currentRecords[currentRecordIndex];
+            closeModal();
+            const date = formatDate(recordToRemove.date);
+            const diag = truncate(recordToRemove.diagnosis, 40);
+            document.getElementById('confirmText').innerHTML =
+                `Are you sure you want to delete this health record?<br><br>` +
+                `<strong>Date:</strong> ${date}<br>` +
+                `<strong>Complaint:</strong> ${diag}<br><br>` +
+                `This action cannot be undone.`;
+            document.getElementById('confirmDialog').classList.add('active');
+        }
+
+        function cancelRemove() {
+            document.getElementById('confirmDialog').classList.remove('active');
+            recordToRemove     = null;
+            currentRecordIndex = null;
+        }
+
+        function executeRemove() {
+            if (!recordToRemove) { cancelRemove(); return; }
+            const el = document.getElementById(`record-${currentRecords.indexOf(recordToRemove)}`);
+            if (el) el.classList.add('deleting');
+            setTimeout(() => {
+                // Hide from this student's view only
+                const hidden = JSON.parse(localStorage.getItem('hiddenHealthRecords')) || [];
+                hidden.push({
+                    studentId: loggedStudent.studentid,
+                    recordId:  recordToRemove.id,
+                    hiddenAt:  new Date().toISOString()
+                });
+                localStorage.setItem('hiddenHealthRecords', JSON.stringify(hidden));
+                knownRecordIds.delete(recordToRemove.id);
+                showToast('Health record removed');
+                loadHealthRecords();
+                cancelRemove();
+            }, 300);
+        }
+
+        /* ── Helpers ─────────────────────────────────────────────────── */
+
+        function formatDate(str) {
+            if (!str) return 'Date not available';
+            try { return new Date(str).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }); }
+            catch(e) { return str; }
+        }
+
+        function truncate(text, max) {
+            if (!text) return 'N/A';
+            return text.length <= max ? text : text.substring(0, max) + '...';
+        }
+
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            t.className = isError ? 'toast error active' : 'toast active';
+            setTimeout(() => t.classList.remove('active'), 3500);
+        }
+
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.getElementById('confirmDialog').addEventListener('click', function(e) {
+            if (e.target === this) cancelRemove();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeModal(); cancelRemove(); }
+        });
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) loadHealthRecords();
+        });
+
+        initializePage();
+    </script>
+</body>
+</html>

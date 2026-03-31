@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Health Records - CampusCare+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+            min-height: 100vh;
+            color: #5D4037;
+        }
+
+        .header {
+            background: rgba(255,245,238,0.98);
+            padding: 16px 20px;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(139,69,19,0.1);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .back-btn {
+            width:40px; height:40px; border-radius:12px; border:none;
+            background:rgba(139,69,19,0.1); color:#8B4513; font-size:18px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s;
+        }
+        .back-btn:active { transform:scale(0.95); }
+
+        .header-title {
+            font-size:18px; font-weight:700; color:#5D4037;
+            flex:1; text-align:center; margin:0 10px;
+        }
+
+        .container { padding:16px; max-width:600px; margin:0 auto; }
+
+        .search-container {
+            background:white; border-radius:12px; padding:12px 16px;
+            display:flex; align-items:center; gap:10px; margin-bottom:16px;
+            box-shadow:0 2px 8px rgba(93,64,55,0.08);
+        }
+        .search-container i { color:#8B4513; opacity:0.6; }
+        .search-input {
+            flex:1; border:none; outline:none; font-size:15px;
+            color:#5D4037; font-family:inherit;
+        }
+        .search-input::placeholder { color:#8B4513; opacity:0.5; }
+
+        .filter-tabs {
+            display:flex; gap:8px; margin-bottom:16px;
+            overflow-x:auto; padding-bottom:4px;
+        }
+        .filter-tab {
+            padding:8px 16px; background:rgba(255,255,255,0.8);
+            border:2px solid transparent; border-radius:20px;
+            font-size:13px; font-weight:600; color:#8B4513;
+            cursor:pointer; white-space:nowrap; transition:all 0.3s;
+        }
+        .filter-tab.active { background:#8B4513; color:white; }
+
+        .section-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:12px; padding:0 4px;
+        }
+        .section-title { font-size:16px; font-weight:700; color:#5D4037; }
+
+        .add-btn {
+            padding:8px 16px; background:#8B4513; color:white;
+            border:none; border-radius:8px; font-size:13px; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; gap:6px;
+        }
+
+        .patients-list { display:flex; flex-direction:column; gap:12px; }
+
+        .patient-card {
+            background:white; border-radius:16px; padding:16px;
+            box-shadow:0 2px 8px rgba(93,64,55,0.08);
+            transition:all 0.3s; cursor:pointer;
+        }
+        .patient-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(93,64,55,0.12); }
+
+        @keyframes newRecordPulse {
+            0%   { box-shadow:0 0 0 0 rgba(34,197,94,0.5); }
+            70%  { box-shadow:0 0 0 10px rgba(34,197,94,0); }
+            100% { box-shadow:0 0 0 0 rgba(34,197,94,0); }
+        }
+        .patient-card.new-record { animation:newRecordPulse 1s ease 2; border:2px solid #22C55E; }
+
+        .patient-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+
+        .patient-avatar {
+            width:50px; height:50px;
+            background:linear-gradient(135deg,#8B4513 0%,#6E3510 100%);
+            color:white; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; font-weight:700; flex-shrink:0;
+        }
+        .patient-info { flex:1; }
+        .patient-name { font-size:16px; font-weight:700; color:#5D4037; margin-bottom:4px; }
+        .patient-meta { font-size:13px; color:#8B4513; opacity:0.8; }
+
+        .status-badge {
+            padding:6px 12px; border-radius:20px;
+            font-size:11px; font-weight:700; text-transform:uppercase;
+        }
+        .status-badge.waiting    { background:rgba(249,115,22,0.1); color:#F97316; }
+        .status-badge.in-progress{ background:rgba(59,130,246,0.1); color:#3B82F6; }
+        .status-badge.completed  { background:rgba(34,197,94,0.1);  color:#22C55E; }
+        .status-badge.critical   { background:rgba(239,68,68,0.1);  color:#EF4444; }
+
+        .card-actions {
+            display:flex; gap:8px; margin-top:12px;
+            padding-top:12px; border-top:1px solid rgba(139,69,19,0.1);
+        }
+        .action-btn {
+            flex:1; padding:10px; border:none; border-radius:8px;
+            font-size:13px; font-weight:600; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            gap:6px; transition:all 0.3s;
+        }
+        .action-btn.primary   { background:#8B4513; color:white; }
+        .action-btn.secondary { background:rgba(139,69,19,0.1); color:#8B4513; }
+        .action-btn:active { transform:scale(0.98); }
+
+        .empty-state {
+            text-align:center; padding:60px 20px; color:#8B4513;
+            background:white; border-radius:16px;
+            box-shadow:0 2px 8px rgba(93,64,55,0.08);
+        }
+        .empty-icon {
+            width:80px; height:80px; background:rgba(139,69,19,0.1);
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            margin:0 auto 20px; font-size:32px; color:#8B4513; opacity:0.5;
+        }
+        .empty-title { font-size:18px; font-weight:600; margin-bottom:8px; color:#5D4037; }
+        .empty-text  { font-size:14px; opacity:0.7; }
+
+        .modal-overlay {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.6); z-index:200;
+            opacity:0; visibility:hidden; transition:all 0.3s;
+        }
+        .modal-overlay.active { opacity:1; visibility:visible; }
+
+        .modal {
+            position:fixed; top:50%; left:50%;
+            transform:translate(-50%,-50%) scale(0.9);
+            background:white; border-radius:24px;
+            width:90%; max-width:500px; max-height:85vh;
+            overflow-y:auto; z-index:201;
+            opacity:0; visibility:hidden; transition:all 0.3s;
+        }
+        .modal.active { opacity:1; visibility:visible; transform:translate(-50%,-50%) scale(1); }
+
+        .modal-header {
+            background:linear-gradient(135deg,#8B4513 0%,#6E3510 100%);
+            color:white; padding:24px; position:relative;
+        }
+        .modal-close {
+            position:absolute; top:16px; right:16px;
+            width:36px; height:36px; border-radius:50%; border:none;
+            background:rgba(255,255,255,0.2); color:white;
+            font-size:16px; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .modal-title  { font-size:20px; font-weight:700; margin-bottom:4px; }
+        .modal-subtitle { font-size:14px; opacity:0.9; }
+        .modal-body   { padding:24px; }
+
+        .form-group   { margin-bottom:16px; }
+        .form-label   { display:block; font-size:13px; font-weight:600; color:#5D4037; margin-bottom:6px; }
+        .form-input, .form-select, .form-textarea {
+            width:100%; padding:12px 16px;
+            border:2px solid rgba(139,69,19,0.2); border-radius:12px;
+            font-size:15px; font-family:inherit; color:#5D4037;
+            background:white; transition:all 0.3s;
+        }
+        .form-input:focus,.form-select:focus,.form-textarea:focus { outline:none; border-color:#8B4513; }
+        .form-textarea { min-height:100px; resize:vertical; }
+
+        .submit-btn {
+            width:100%; padding:16px; background:#8B4513; color:white;
+            border:none; border-radius:12px; font-size:16px; font-weight:600;
+            cursor:pointer; margin-top:8px; transition:all 0.3s;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .submit-btn:active { transform:scale(0.98); }
+
+        .record-section { margin-bottom:20px; }
+        .record-section-title {
+            font-size:12px; font-weight:700; color:#8B4513;
+            text-transform:uppercase; letter-spacing:0.5px;
+            margin-bottom:12px; display:flex; align-items:center; gap:8px;
+        }
+        .record-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .record-item { background:#FFF8F0; padding:14px; border-radius:12px; }
+        .record-item.full-width { grid-column:1/-1; }
+        .record-label { font-size:11px; color:#8B4513; opacity:0.7; margin-bottom:4px; text-transform:uppercase; font-weight:600; }
+        .record-value { font-size:15px; color:#5D4037; font-weight:600; }
+
+        .quick-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px; }
+        .quick-btn {
+            padding:12px 8px; background:rgba(139,69,19,0.1); border:none;
+            border-radius:10px; font-size:12px; font-weight:600; color:#8B4513;
+            cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; transition:all 0.3s;
+        }
+        .quick-btn i { font-size:18px; }
+        .quick-btn:active { transform:scale(0.95); background:#8B4513; color:white; }
+
+        .delete-modal-overlay {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.7); z-index:300;
+            display:none; justify-content:center; align-items:center;
+            padding:20px; backdrop-filter:blur(5px);
+        }
+        .delete-modal-overlay.active { display:flex; }
+        .delete-modal-content {
+            background:white; border-radius:20px; padding:30px;
+            max-width:400px; width:100%; text-align:center;
+            animation:slideUp 0.3s ease; box-shadow:0 25px 80px rgba(0,0,0,0.4);
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(50px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .delete-modal-icon {
+            width:70px; height:70px;
+            background:linear-gradient(135deg,#FFEBEE 0%,#FFCDD2 100%);
+            border-radius:50%; display:flex; align-items:center; justify-content:center;
+            margin:0 auto 20px; font-size:32px; color:#f44336;
+        }
+        .delete-modal-title { font-size:22px; font-weight:700; color:#5D4037; margin-bottom:10px; }
+        .delete-modal-text  { font-size:15px; color:#8B4513; margin-bottom:25px; line-height:1.5; }
+        .delete-modal-buttons { display:flex; gap:10px; }
+        .delete-confirm-btn {
+            flex:1; padding:12px;
+            background:linear-gradient(135deg,#f44336 0%,#c62828 100%);
+            color:white; border:none; border-radius:10px; cursor:pointer;
+            font-size:14px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.3s;
+        }
+        .delete-confirm-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(244,67,54,0.3); }
+        .delete-cancel-btn {
+            flex:1; padding:12px; background:#ECEFF1; color:#5D4037;
+            border:none; border-radius:10px; cursor:pointer;
+            font-size:14px; font-weight:600;
+            display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.3s;
+        }
+        .delete-cancel-btn:hover { background:#d5d8da; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">
+            <i class="fas fa-heartbeat" style="color:#8B4513;margin-right:8px;"></i>
+            Health Records
+        </div>
+        <div style="width:40px;"></div>
+    </div>
+
+    <div class="container">
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" class="search-input" id="searchInput"
+                   placeholder="Search patient name or ID..." onkeyup="handleSearch()">
+        </div>
+
+        <div class="filter-tabs">
+            <div class="filter-tab active" onclick="filterStatus('all',this)">All Patients</div>
+            <div class="filter-tab" onclick="filterStatus('waiting',this)">Waiting</div>
+            <div class="filter-tab" onclick="filterStatus('in-progress',this)">In Progress</div>
+            <div class="filter-tab" onclick="filterStatus('completed',this)">Completed</div>
+        </div>
+
+        <div class="section-header">
+            <span class="section-title" id="listTitle">Today's Patients</span>
+            <button class="add-btn" onclick="openAddRecord()">
+                <i class="fas fa-plus"></i> Add Record
+            </button>
+        </div>
+
+        <div class="patients-list" id="patientsList">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-user-injured"></i></div>
+                <div class="empty-title">No Patients Yet</div>
+                <div class="empty-text">Add a health record or check appointments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / New-for-existing record modal -->
+    <div class="modal-overlay" id="recordModalOverlay" onclick="closeRecordModal()"></div>
+    <div class="modal" id="recordModal">
+        <div class="modal-header">
+            <button class="modal-close" onclick="closeRecordModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-title"   id="recordModalTitle">New Health Record</div>
+            <div class="modal-subtitle" id="recordModalSubtitle">Enter patient health information</div>
+        </div>
+        <div class="modal-body">
+            <form id="healthRecordForm" onsubmit="saveHealthRecord(event)">
+
+                <!-- Hidden when "New Record" is used from a card -->
+                <div class="form-group" id="studentSelectGroup">
+                    <label class="form-label">Select Student *</label>
+                    <select class="form-select" id="studentSelect" onchange="loadStudentInfo()">
+                        <option value="">Choose a student...</option>
+                    </select>
+                </div>
+
+                <div id="studentPreview"
+                     style="display:none;margin-bottom:16px;padding:12px;background:#FFF8F0;border-radius:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div id="previewAvatar"
+                             style="width:40px;height:40px;background:#8B4513;color:white;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;font-weight:700;">?</div>
+                        <div>
+                            <div id="previewName" style="font-weight:700;color:#5D4037;">Student Name</div>
+                            <div id="previewId"   style="font-size:12px;color:#8B4513;">ID: 000000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Chief Complaint / Symptoms *</label>
+                    <textarea class="form-textarea" id="symptoms" required
+                              placeholder="Describe the patient's symptoms..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="recordStatus">
+                        <option value="waiting">Waiting</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" id="notes" placeholder="Additional notes..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-save"></i> Save Health Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Health Record Modal -->
+    <div class="modal-overlay" id="viewModalOverlay" onclick="closeViewModal()"></div>
+    <div class="modal" id="viewModal">
+        <div class="modal-header">
+            <button class="modal-close" onclick="closeViewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div id="viewAvatar"
+                     style="width:60px;height:60px;background:rgba(255,255,255,0.2);border-radius:50%;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:24px;font-weight:700;border:3px solid rgba(255,255,255,0.3);">JD</div>
+                <div>
+                    <div class="modal-title"   id="viewPatientName">Patient Name</div>
+                    <div class="modal-subtitle" id="viewPatientId">ID: 000000</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-body">
+            <div class="record-section">
+                <div class="record-section-title"><i class="fas fa-stethoscope"></i> Assessment</div>
+                <div class="record-grid">
+                    <div class="record-item full-width">
+                        <div class="record-label">Chief Complaint / Symptoms</div>
+                        <div class="record-value" id="viewSymptoms">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="record-section">
+                <div class="record-section-title"><i class="fas fa-info-circle"></i> Record Information</div>
+                <div class="record-grid">
+                    <div class="record-item">
+                        <div class="record-label">Status</div>
+                        <div class="record-value" id="viewStatus">--</div>
+                    </div>
+                    <div class="record-item">
+                        <div class="record-label">Date</div>
+                        <div class="record-value" id="viewDate">--</div>
+                    </div>
+                    <div class="record-item full-width">
+                        <div class="record-label">Notes</div>
+                        <div class="record-value" id="viewNotes">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="updateStatus('waiting')">
+                    <i class="fas fa-clock"></i><span>Waiting</span>
+                </button>
+                <button class="quick-btn" onclick="updateStatus('in-progress')">
+                    <i class="fas fa-user-md"></i><span>In Progress</span>
+                </button>
+                <button class="quick-btn" onclick="updateStatus('completed')">
+                    <i class="fas fa-check"></i><span>Complete</span>
+                </button>
+            </div>
+
+            <button class="submit-btn" onclick="closeViewModal()" style="margin-top:16px;">
+                <i class="fas fa-times"></i> Close
+            </button>
+            <button class="submit-btn" onclick="confirmDeleteFromView()"
+                    style="margin-top:12px;background:linear-gradient(135deg,#f44336 0%,#c62828 100%);">
+                <i class="fas fa-trash"></i> Delete Record
+            </button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="delete-modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()">
+        <div class="delete-modal-content" onclick="event.stopPropagation()">
+            <div class="delete-modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="delete-modal-title">Delete Health Record?</div>
+            <div class="delete-modal-text" id="deleteConfirmText">
+                Are you sure you want to delete this health record? This action cannot be undone.
+            </div>
+            <div class="delete-modal-buttons">
+                <button class="delete-confirm-btn" onclick="executeDelete()">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+                <button class="delete-cancel-btn" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let healthRecords   = [];
+        let students        = [];
+        let currentFilter   = 'all';
+        let searchQuery     = '';
+        let currentViewId   = null;
+        let recordToDelete  = null;
+        let lastAddedId     = null;
+        let lockedStudentId  = null; // set when "New Record" on a card is clicked
+        let updatingRecordId = null; // ID of the record to update in-place (not push new)
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadData();
+            populateStudentSelect();
+            renderRecords();
+        });
+
+        /* ── Data ──────────────────────────────────────────────────── */
+
+        function loadData() {
+            students      = JSON.parse(localStorage.getItem('studentAccounts')) || [];
+            healthRecords = JSON.parse(localStorage.getItem('healthRecords'))   || [];
+            // No auto-import from appointments here.
+            // Records are ONLY created manually by staff via "Add Record".
+        }
+
+        function saveRecords() {
+            localStorage.setItem('healthRecords', JSON.stringify(healthRecords));
+        }
+
+        function populateStudentSelect() {
+            const sel = document.getElementById('studentSelect');
+            sel.innerHTML = '<option value="">Choose a student...</option>';
+            students.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value       = s.studentid;
+                opt.textContent = `${s.firstname} ${s.lastname} (${s.studentid})`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function loadStudentInfo() {
+            const sid     = document.getElementById('studentSelect').value;
+            const preview = document.getElementById('studentPreview');
+            if (!sid) { preview.style.display = 'none'; return; }
+            const student = students.find(s => s.studentid === sid);
+            if (student) {
+                document.getElementById('previewAvatar').textContent = getInitials(`${student.firstname} ${student.lastname}`);
+                document.getElementById('previewName').textContent   = `${student.firstname} ${student.lastname}`;
+                document.getElementById('previewId').textContent     = `ID: ${student.studentid}`;
+                preview.style.display = 'block';
+            }
+        }
+
+        /* ── Search / Filter ───────────────────────────────────────── */
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderRecords();
+        }
+
+        function filterStatus(status, el) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            const titles = {
+                all: "Today's Patients", waiting: 'Waiting List',
+                'in-progress': 'In Progress', completed: 'Completed Today'
+            };
+            document.getElementById('listTitle').textContent = titles[status];
+            renderRecords();
+        }
+
+        /* ── Render ────────────────────────────────────────────────── */
+
+        function renderRecords() {
+            const list  = document.getElementById('patientsList');
+            const today = new Date().toDateString(); // e.g. "Mon Mar 30 2026"
+
+            // Support both ISO dates and legacy toDateString() dates
+            let filtered = healthRecords.filter(r => {
+                if (!r.date) return false;
+                try { return new Date(r.date).toDateString() === today; }
+                catch(e) { return r.date === today; }
+            });
+            if (currentFilter !== 'all') filtered = filtered.filter(r => r.status === currentFilter);
+            if (searchQuery) {
+                filtered = filtered.filter(r =>
+                    r.studentName.toLowerCase().includes(searchQuery) ||
+                    (r.studentId && r.studentId.toLowerCase().includes(searchQuery))
+                );
+            }
+
+            const priority = { critical:0, waiting:1, 'in-progress':2, completed:3 };
+            filtered.sort((a, b) => priority[a.status] - priority[b.status]);
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-user-injured"></i></div>
+                        <div class="empty-title">No Patients Found</div>
+                        <div class="empty-text">${searchQuery ? 'Try a different search term' : 'No patients in this category'}</div>
+                    </div>`;
+                return;
+            }
+
+            const labels = { waiting:'Waiting', 'in-progress':'In Progress', completed:'Completed', critical:'Critical' };
+
+            list.innerHTML = filtered.map(record => `
+                <div class="patient-card${record.id === lastAddedId ? ' new-record' : ''}"
+                     onclick="viewRecord('${record.id}')">
+                    <div class="patient-header">
+                        <div class="patient-avatar">${getInitials(record.studentName)}</div>
+                        <div class="patient-info">
+                            <div class="patient-name">${record.studentName}</div>
+                            <div class="patient-meta">ID: ${record.studentId} • ${record.studentCourse || ''} ${record.studentYear || ''}</div>
+                        </div>
+                        <div class="status-badge ${record.status}">${labels[record.status]}</div>
+                    </div>
+                    <div class="card-actions" onclick="event.stopPropagation()">
+                        <button class="action-btn secondary" onclick="openNewRecordForStudent('${record.id}')">
+                            <i class="fas fa-plus-circle"></i> New Record
+                        </button>
+                        <button class="action-btn primary" onclick="viewRecord('${record.id}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (lastAddedId) setTimeout(() => { lastAddedId = null; }, 3000);
+        }
+
+        /* ── Modal openers ─────────────────────────────────────────── */
+
+        /** Top "Add Record" button — choose any student */
+        function openAddRecord() {
+            lockedStudentId = null;
+            document.getElementById('healthRecordForm').reset();
+            document.getElementById('studentPreview').style.display    = 'none';
+            document.getElementById('studentSelectGroup').style.display = 'block';
+            document.getElementById('studentSelect').required           = true;
+            document.getElementById('recordModalTitle').textContent     = 'New Health Record';
+            document.getElementById('recordModalSubtitle').textContent  = 'Enter patient health information';
+            document.getElementById('recordModalOverlay').classList.add('active');
+            document.getElementById('recordModal').classList.add('active');
+        }
+
+        /** "New Record" button on a card — updates the existing record in place */
+        function openNewRecordForStudent(existingId) {
+            const existing = healthRecords.find(r => r.id === existingId);
+            if (!existing) return;
+
+            lockedStudentId  = existing.studentId;
+            updatingRecordId = existingId; // mark for in-place update
+
+            document.getElementById('healthRecordForm').reset();
+            document.getElementById('studentSelectGroup').style.display = 'none';
+            document.getElementById('studentSelect').required           = false;
+
+            // Pre-fill current values so staff sees what's already there
+            document.getElementById('symptoms').value     = existing.symptoms || '';
+            document.getElementById('recordStatus').value = existing.status   || 'waiting';
+            document.getElementById('notes').value        = existing.notes    || '';
+
+            // Show patient info
+            document.getElementById('previewAvatar').textContent = getInitials(existing.studentName);
+            document.getElementById('previewName').textContent   = existing.studentName;
+            document.getElementById('previewId').textContent     = `ID: ${existing.studentId}`;
+            document.getElementById('studentPreview').style.display = 'block';
+
+            document.getElementById('recordModalTitle').textContent    = 'Update Record';
+            document.getElementById('recordModalSubtitle').textContent = `Updating record for ${existing.studentName}`;
+            document.getElementById('recordModalOverlay').classList.add('active');
+            document.getElementById('recordModal').classList.add('active');
+        }
+
+        /* ── Save ──────────────────────────────────────────────────── */
+
+        function saveHealthRecord(e) {
+            e.preventDefault();
+
+            const studentId = lockedStudentId || document.getElementById('studentSelect').value;
+            if (!studentId) { alert('Please select a student'); return; }
+
+            const student = students.find(s => s.studentid === studentId);
+            if (!student) { alert('Student not found'); return; }
+
+            const symptomsVal = document.getElementById('symptoms').value;
+
+            if (updatingRecordId) {
+                // ── UPDATE existing record in place ──
+                const index = healthRecords.findIndex(r => r.id === updatingRecordId);
+                if (index !== -1) {
+                    healthRecords[index] = {
+                        ...healthRecords[index],
+                        symptoms:   symptomsVal,
+                        diagnosis:  symptomsVal,
+                        status:     document.getElementById('recordStatus').value,
+                        notes:      document.getElementById('notes').value,
+                        doctor:     'CampusCare+ Staff',
+                        visitType:  'Clinic Visit',
+                        source:     'staff',
+                        updatedAt:  new Date().toISOString()
+                        // date and createdAt are preserved from the original via spread
+                    };
+                    lastAddedId = updatingRecordId;
+                }
+                saveRecords();
+                updatingRecordId = null;
+                lockedStudentId  = null;
+                renderRecords();
+                closeRecordModal();
+                showNotification('✅ Health record updated — visible to student!');
+
+            } else {
+                // ── NEW record (triggered by top "Add Record" button) ──
+                const newId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+                const nowISO = new Date().toISOString();
+                healthRecords.push({
+                    id:            newId,
+                    studentId:     studentId,
+                    studentName:   `${student.firstname} ${student.lastname}`,
+                    studentCourse: student.course,
+                    studentYear:   student.year,
+                    symptoms:      symptomsVal,
+                    diagnosis:     symptomsVal,
+                    status:        document.getElementById('recordStatus').value,
+                    notes:         document.getElementById('notes').value,
+                    date:          nowISO,   // ISO string — student page parses reliably
+                    doctor:        'CampusCare+ Staff',
+                    visitType:     'Clinic Visit',
+                    source:        'staff',
+                    createdAt:     nowISO,
+                    updatedAt:     nowISO
+                });
+                saveRecords();
+                lastAddedId     = newId;
+                lockedStudentId = null;
+                renderRecords();
+                closeRecordModal();
+                showNotification('✅ Health record saved — visible to student!');
+            }
+        }
+
+        /* ── View ──────────────────────────────────────────────────── */
+
+        function viewRecord(id) {
+            const record = healthRecords.find(r => r.id === id);
+            if (!record) return;
+            currentViewId = id;
+
+            document.getElementById('viewAvatar').textContent      = getInitials(record.studentName);
+            document.getElementById('viewPatientName').textContent  = record.studentName;
+            document.getElementById('viewPatientId').textContent    = `ID: ${record.studentId}`;
+            document.getElementById('viewSymptoms').textContent     = record.symptoms || '--';
+
+            const statusLabels = {
+                waiting:'Waiting', 'in-progress':'In Progress',
+                completed:'Completed', critical:'Critical – Needs Attention'
+            };
+            document.getElementById('viewStatus').textContent = statusLabels[record.status] || record.status;
+            document.getElementById('viewStatus').style.color = record.status === 'critical' ? '#EF4444' : '#5D4037';
+            document.getElementById('viewDate').textContent   = new Date(record.date).toLocaleDateString('en-US', {
+                weekday:'short', year:'numeric', month:'short', day:'numeric'
+            });
+            document.getElementById('viewNotes').textContent  = record.notes || '--';
+
+            document.getElementById('viewModalOverlay').classList.add('active');
+            document.getElementById('viewModal').classList.add('active');
+        }
+
+        function updateStatus(status) {
+            if (!currentViewId) return;
+            const record = healthRecords.find(r => r.id === currentViewId);
+            if (record) {
+                record.status    = status;
+                record.updatedAt = new Date().toISOString();
+                saveRecords();
+                renderRecords();
+                viewRecord(currentViewId);
+                showNotification(`Status updated to ${status}`);
+            }
+        }
+
+        /* ── Delete ────────────────────────────────────────────────── */
+
+        function confirmDeleteFromView() {
+            if (!currentViewId) return;
+            const record = healthRecords.find(r => r.id === currentViewId);
+            if (!record) return;
+            recordToDelete = currentViewId;
+            document.getElementById('deleteConfirmText').innerHTML =
+                `Are you sure you want to delete the health record for <strong>${record.studentName}</strong>?<br><br>` +
+                `Date: ${new Date(record.date).toLocaleDateString()}<br>` +
+                `Status: ${record.status}<br><br>` +
+                `This action cannot be undone.`;
+            closeViewModal();
+            document.getElementById('deleteModalOverlay').classList.add('active');
+        }
+
+        function executeDelete() {
+            if (!recordToDelete) { closeDeleteModal(); return; }
+            const record = healthRecords.find(r => r.id === recordToDelete);
+            healthRecords = healthRecords.filter(r => r.id !== recordToDelete);
+            saveRecords();
+            renderRecords();
+            closeDeleteModal();
+            showNotification(`Record for ${record ? record.studentName : 'patient'} deleted`);
+            recordToDelete = null;
+        }
+
+        /* ── Close helpers ─────────────────────────────────────────── */
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModalOverlay').classList.remove('active');
+            recordToDelete = null;
+        }
+
+        function closeRecordModal() {
+            document.getElementById('recordModalOverlay').classList.remove('active');
+            document.getElementById('recordModal').classList.remove('active');
+            lockedStudentId  = null;
+            updatingRecordId = null;
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModalOverlay').classList.remove('active');
+            document.getElementById('viewModal').classList.remove('active');
+            currentViewId = null;
+        }
+
+        function goBack() { window.location.href = 'staff-dashboard.html'; }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+        }
+
+        function showNotification(message) {
+            const n = document.createElement('div');
+            n.style.cssText = `position:fixed;top:20px;right:20px;background:#8B4513;color:white;
+                padding:16px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);
+                z-index:1000;font-weight:600;font-family:Inter,sans-serif;font-size:14px;
+                max-width:300px;line-height:1.4;`;
+            n.textContent = message;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3500);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeRecordModal(); closeViewModal(); closeDeleteModal(); }
+        });
+
+        // Safe periodic refresh — loadData guards against duplicate appointments
+        setInterval(() => { loadData(); renderRecords(); }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Login - CampusCare+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+    padding: 20px;
+}
+
+.box {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(255, 245, 238, 0.95);
+    padding: 45px 35px;
+    border-radius: 24px;
+    box-shadow: 0 25px 80px rgba(93, 64, 55, 0.2),
+                0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+}
+
+.logo-icon i {
+    font-size: 32px;
+    color: white;
+}
+
+h2 {
+    color: #5D4037;
+    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    color: #8B4513;
+    font-size: 14px;
+    margin-bottom: 30px;
+    opacity: 0.8;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #5D4037;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-group i {
+    position: absolute;
+    left: 15px;
+    top: 42px;
+    color: #8B4513;
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+input {
+    width: 100%;
+    padding: 14px 15px 14px 45px;
+    border: 2px solid #E8D5C4;
+    border-radius: 12px;
+    background: white;
+    color: #5D4037;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 4px rgba(139, 69, 19, 0.1);
+    transform: translateY(-2px);
+}
+
+input::placeholder {
+    color: #A08070;
+}
+
+input.error {
+    border-color: #E74C3C;
+    background-color: #FDF2F2;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.password-box {
+    position: relative;
+}
+
+.password-box input {
+    padding-right: 50px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #8B4513;
+    font-size: 18px;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+    padding: 5px;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #5D4037;
+    cursor: pointer;
+}
+
+.remember-me input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    accent-color: #8B4513;
+    cursor: pointer;
+}
+
+.forgot-password {
+    color: #8B4513;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #6E3510;
+    text-decoration: underline;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+button.loading::after {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.divider {
+    margin: 25px 0;
+    position: relative;
+    text-align: center;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4A574, transparent);
+}
+
+.divider span {
+    background: rgba(255, 245, 238, 0.95);
+    padding: 0 15px;
+    color: #8B4513;
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+}
+
+.links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.link-btn {
+    padding: 12px;
+    border: 2px solid #E8D5C4;
+    border-radius: 10px;
+    background: white;
+    color: #5D4037;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.link-btn:hover {
+    border-color: #8B4513;
+    background: #FFF8F0;
+    transform: translateY(-2px);
+}
+
+.link-btn i {
+    color: #8B4513;
+}
+
+.error-message {
+    color: #E74C3C;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+    font-weight: 500;
+    padding: 10px;
+    background: #FDF2F2;
+    border-radius: 8px;
+    border-left: 3px solid #E74C3C;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .box {
+        padding: 35px 25px;
+    }
+    
+    h2 {
+        font-size: 24px;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+    <div class="logo-icon">
+        <i class="fas fa-user-graduate"></i>
+    </div>
+
+    <h2>Welcome Back!</h2>
+    <p class="subtitle">Student Login</p>
+
+    <div class="input-group">
+        <label for="email">Email Address</label>
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+    </div>
+
+    <div class="input-group password-box">
+        <label for="password">Password</label>
+        <i class="fas fa-lock" style="top: 42px;"></i>
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+        <span class="toggle-password" onclick="togglePassword()">
+            <i class="fas fa-eye" id="eyeIcon"></i>
+        </span>
+    </div>
+
+    <div class="options">
+        <label class="remember-me">
+            <input type="checkbox" id="rememberMe">
+            <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-password" onclick="forgotPassword()">Forgot Password?</a>
+    </div>
+
+    <button onclick="login()" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> LOGIN
+    </button>
+
+    <div class="error-message" id="errorMsg"></div>
+
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <div class="links">
+        <button class="link-btn" onclick="goRegister()">
+            <i class="fas fa-user-plus"></i> Create New Account
+        </button>
+        <button class="link-btn" onclick="goSelectUser()">
+            <i class="fas fa-users"></i> Select User Type
+        </button>
+    </div>
+
+</div>
+
+<script>
+// Check for saved email
+window.onload = function() {
+    let savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+        document.getElementById("email").value = savedEmail;
+        document.getElementById("rememberMe").checked = true;
+    }
+};
+
+function login() {
+    let emailInput = document.getElementById("email");
+    let passwordInput = document.getElementById("password");
+    let email = emailInput.value.trim();
+    let password = passwordInput.value;
+    let errorMsg = document.getElementById("errorMsg");
+    let loginBtn = document.getElementById("loginBtn");
+    let rememberMe = document.getElementById("rememberMe").checked;
+
+    // Reset errors
+    emailInput.classList.remove("error");
+    passwordInput.classList.remove("error");
+    errorMsg.style.display = "none";
+
+    // Validation
+    if (!email || !password) {
+        if (!email) emailInput.classList.add("error");
+        if (!password) passwordInput.classList.add("error");
+        showError("Please fill in all fields");
+        return;
+    }
+
+    // Show loading
+    loginBtn.classList.add("loading");
+    loginBtn.innerHTML = 'Logging in...';
+
+    // Simulate network delay
+    setTimeout(() => {
+        let stored = JSON.parse(localStorage.getItem("studentAccounts"));
+        
+        if (stored == null || stored.length == 0) {
+            loginBtn.classList.remove("loading");
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> LOGIN';
+            showError("No registered accounts found. Please register first.");
+            return;
+        }
+
+        let student = stored.find(s => s.email === email && s.password === password);
+
+        if (student) {
+            // Save remember me
+            if (rememberMe) {
+                localStorage.setItem("rememberedEmail", email);
+            } else {
+                localStorage.removeItem("rememberedEmail");
+            }
+            
+            localStorage.setItem("loggedStudent", JSON.stringify(student));
+            window.location.href = "student-dashboard.html";
+        } else {
+            loginBtn.classList.remove("loading");
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> LOGIN';
+            emailInput.classList.add("error");
+            passwordInput.classList.add("error");
+            showError("Invalid email or password");
+        }
+    }, 800);
+}
+
+function showError(message) {
+    let errorMsg = document.getElementById("errorMsg");
+    errorMsg.textContent = message;
+    errorMsg.style.display = "block";
+    setTimeout(() => {
+        errorMsg.style.display = "none";
+    }, 5000);
+}
+
+function goRegister() {
+    window.location.href = "register.html";
+}
+
+function goSelectUser() {
+    window.location.href = "select-user.html";
+}
+
+function togglePassword() {
+    let pass = document.getElementById("password");
+    let eyeIcon = document.getElementById("eyeIcon");
+    
+    if (pass.type === "password") {
+        pass.type = "text";
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+    } else {
+        pass.type = "password";
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+    }
+}
+
+function forgotPassword() {
+    alert("Please contact the clinic administrator to reset your password.");
+}
+
+// Allow Enter key to login
+document.getElementById("password").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        login();
+    }
+});
+
+document.getElementById("email").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        document.getElementById("password").focus();
+    }
+});
+
+</script>
+
+</body>
+</html>
