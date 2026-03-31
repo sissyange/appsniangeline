@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CampusCare+ Register</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background: linear-gradient(135deg, #F4C2A1 0%, #E8B896 50%, #D4A574 100%);
+        font-family: 'Inter', Arial, sans-serif;
+        color: #5D4037;
+        padding: 10px;
+    }
+    .container {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(255, 245, 238, 0.95);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(93, 64, 55, 0.15), 0 8px 25px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        max-height: 95vh;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    h2 {
+        text-align: center;
+        color: #5D4037;
+        margin-bottom: 20px;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: -0.5px;
+    }
+    .form-group { margin-bottom: 12px; position: relative; }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #8B4513;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 2px solid #E8D5C4;
+        border-radius: 8px;
+        background: #FFF;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        color: #5D4037;
+        transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #8B4513;
+        box-shadow: 0 0 0 3px rgba(139,69,19,0.1);
+        transform: translateY(-1px);
+    }
+    input[type="date"] {
+        cursor: pointer;
+        position: relative;
+        font-family: 'Inter', sans-serif;
+        color: #5D4037;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        color: #8B4513;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+        width: 20px;
+        height: 20px;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+    input[type="date"]:invalid { color: #999; }
+    .date-hint { font-size: 11px; color: #8B4513; margin-top: 4px; opacity: 0.8; font-style: italic; }
+    .age-display { font-size: 12px; color: #2E7D32; margin-top: 4px; font-weight: 500; display: none; }
+    .age-display.invalid { color: #D32F2F; }
+
+    /* Inline error message styling */
+    .error-message {
+        font-size: 11px;
+        color: #D32F2F;
+        margin-top: 4px;
+        display: none;
+        font-weight: 500;
+        padding-left: 4px;
+        border-left: 2px solid #D32F2F;
+    }
+    .error-message.show { display: block; animation: slideIn 0.3s ease; }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Password requirements styling */
+    .password-requirements {
+        background: #FFF8F0;
+        border: 1px solid #E8D5C4;
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 6px;
+        font-size: 11px;
+    }
+    .password-requirements h4 {
+        margin: 0 0 6px 0;
+        color: #8B4513;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .requirement {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 3px;
+        color: #999;
+        transition: all 0.3s ease;
+    }
+    .requirement:last-child { margin-bottom: 0; }
+    .requirement.met { color: #2E7D32; }
+    .requirement-icon {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .requirement.met .requirement-icon {
+        background: #4CAF50;
+        border-color: #4CAF50;
+        color: white;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 16px;
+        background: linear-gradient(135deg, #8B4513 0%, #6E3510 100%);
+        border: none;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139,69,19,0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139,69,19,0.4);
+        background: linear-gradient(135deg, #9B5523 0%, #7E4520 100%);
+    }
+    button:active { transform: translateY(0); }
+
+    /* Success message styling */
+    .success-banner {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 16px;
+        font-weight: 600;
+        display: none;
+        animation: slideDown 0.5s ease;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        font-size: 14px;
+    }
+    .success-banner.show { display: block; }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-link { text-align: center; margin-top: 16px; font-size: 13px; color: #8B4513; }
+    .login-link span {
+        color: #8B4513;
+        cursor: pointer;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: all 0.3s ease;
+    }
+    .login-link span:hover { color: #6E3510; text-underline-offset: 5px; }
+    .error { border-color: #FF6B6B !important; background-color: #FFF5F5 !important; animation: shake 0.5s ease-in-out; }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+    .success { border-color: #4CAF50 !important; background-color: #F1F8E9 !important; }
+    input[readonly] { background: #F5F5F5; color: #8B4513; font-weight: 600; cursor: not-allowed; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Mobile-specific improvements */
+    @media (max-width: 480px) {
+        body { padding: 8px; }
+        .container { 
+            padding: 18px; 
+            border-radius: 12px;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+        h2 { font-size: 20px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 10px; }
+        label { font-size: 11px; }
+        input, select { 
+            padding: 10px; 
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        .row { grid-template-columns: 1fr; gap: 0; }
+        .password-requirements { padding: 8px; }
+        button { 
+            padding: 14px; /* Larger touch target */
+            font-size: 16px;
+            margin-top: 14px;
+        }
+        .login-link { font-size: 12px; }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+        .container { padding: 15px; }
+        h2 { font-size: 18px; }
+        input, select { padding: 8px; }
+    }
+
+    /* Landscape mode on mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+        body { 
+            padding: 5px; 
+            align-items: flex-start;
+        }
+        .container { 
+            max-height: 95vh; 
+            padding: 15px;
+        }
+        .form-group { margin-bottom: 8px; }
+        h2 { margin-bottom: 12px; }
+    }
+
+    .container::-webkit-scrollbar { width: 6px; }
+    .container::-webkit-scrollbar-track { background: #F5F5F5; border-radius: 3px; }
+    .container::-webkit-scrollbar-thumb { background: #D7A98C; border-radius: 3px; }
+    .container::-webkit-scrollbar-thumb:hover { background: #8B4513; }
+</style>
+<base target="_blank">
+</head>
+
+<body>
+<div class="container">
+
+<h2>🎓 Student Registration</h2>
+
+<!-- Success Banner -->
+<div class="success-banner" id="successBanner">
+    ✅ Registration Successful! Redirecting to login...
+</div>
+
+<div class="form-group">
+    <label for="lastname">Last Name</label>
+    <input type="text" id="lastname" placeholder="Enter last name">
+    <div class="error-message" id="lastname-error">Please enter your last name</div>
+</div>
+
+<div class="form-group">
+    <label for="firstname">First Name</label>
+    <input type="text" id="firstname" placeholder="Enter first name">
+    <div class="error-message" id="firstname-error">Please enter your first name</div>
+</div>
+
+<div class="form-group">
+    <label for="middlename">Middle Name</label>
+    <input type="text" id="middlename" placeholder="Enter middle name">
+    <div class="error-message" id="middlename-error">Please enter your middle name</div>
+</div>
+
+<div class="form-group">
+    <label for="sex">Sex</label>
+    <select id="sex">
+        <option value="">Select Sex</option>
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+    <div class="error-message" id="sex-error">Please select your sex</div>
+</div>
+
+<div class="form-group">
+    <label for="studentid">Student ID *</label>
+    <input type="text" id="studentid" placeholder="Enter your Student ID (e.g., 2024-0001)">
+    <div class="error-message" id="studentid-error">Please enter a valid Student ID</div>
+    <div class="error-message" id="studentid-duplicate-error">This Student ID is already registered</div>
+</div>
+
+<div class="form-group">
+    <label for="birthdate">Birthdate</label>
+    <input type="date" id="birthdate" placeholder="Select your birthdate" max="" onchange="validateAge()">
+    <div class="date-hint">Must be 18–40 years old</div>
+    <div class="age-display" id="ageDisplay"></div>
+    <div class="error-message" id="birthdate-error">You must be 18–40 years old to register</div>
+</div>
+
+<div class="row">
+    <div class="form-group">
+        <label for="course">Course</label>
+        <select id="course">
+            <option value="">Select Course</option>
+            <option>BSIT</option>
+            <option>BSHM</option>
+            <option>BSBA</option>
+            <option>BSED</option>
+            <option>BEED</option>
+        </select>
+        <div class="error-message" id="course-error">Please select your course</div>
+    </div>
+    <div class="form-group">
+        <label for="year">Year Level</label>
+        <select id="year">
+            <option value="">Select Year Level</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+        </select>
+        <div class="error-message" id="year-error">Please select your year level</div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="contact">Contact Number</label>
+    <input type="text" id="contact" value="+63" maxlength="13" placeholder="+639XXXXXXXXX">
+    <div class="error-message" id="contact-error">Please enter a valid contact number starting with 9</div>
+</div>
+
+<div class="row">
+    <div class="form-group">
+        <label for="height">Height (cm)</label>
+        <input type="number" id="height" placeholder="e.g., 170">
+        <div class="error-message" id="height-error">Please enter your height</div>
+    </div>
+    <div class="form-group">
+        <label for="weight">Weight (kg)</label>
+        <input type="number" id="weight" placeholder="e.g., 65">
+        <div class="error-message" id="weight-error">Please enter your weight</div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="example@email.com">
+    <div class="error-message" id="email-error">Please enter a valid email address</div>
+</div>
+
+<div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Create a strong password">
+    <div class="error-message" id="password-error">Password must meet all requirements below</div>
+    <div class="password-requirements" id="passwordRequirements">
+        <h4>Password must contain:</h4>
+        <div class="requirement" id="req-uppercase">
+            <span class="requirement-icon">✓</span>
+            <span>At least one uppercase letter (A-Z)</span>
+        </div>
+        <div class="requirement" id="req-lowercase">
+            <span class="requirement-icon">✓</span>
+            <span>At least one lowercase letter (a-z)</span>
+        </div>
+        <div class="requirement" id="req-number">
+            <span class="requirement-icon">✓</span>
+            <span>At least one number (0-9)</span>
+        </div>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="confirmPassword">Confirm Password</label>
+    <input type="password" id="confirmPassword" placeholder="Re-enter your password">
+    <div class="error-message" id="confirmPassword-error">Passwords do not match</div>
+</div>
+
+<button onclick="register()" id="registerBtn">Register Now</button>
+
+<div class="login-link">
+    Already have an account?
+    <span onclick="login()">Log in here</span>
+</div>
+
+</div>
+
+<script>
+window.onload = function(){
+    let today = new Date().toISOString().split('T')[0];
+    document.getElementById('birthdate').setAttribute('max', today);
+}
+
+// Contact number validation
+let contactErrorShown = false;
+document.getElementById("contact").addEventListener("input", function(){
+    let value = this.value;
+    let errorMsg = document.getElementById('contact-error');
+
+    if(!value.startsWith("+63")) { 
+        this.value = "+63"; 
+        return; 
+    }
+
+    let numbers = value.replace("+63","");
+
+    // Show error inline if doesn't start with 9
+    if(numbers.length > 0 && numbers[0] !== "9"){ 
+        errorMsg.textContent = "Phone number must start with 9 after +63";
+        errorMsg.classList.add('show');
+        this.classList.add('error');
+        this.value = "+63"; 
+        return; 
+    }
+
+    // Hide error if valid
+    if(numbers.length > 0 && numbers[0] === "9") {
+        errorMsg.classList.remove('show');
+        this.classList.remove('error');
+    }
+
+    this.value = "+63" + numbers.replace(/[^0-9]/g,"");
+});
+
+// Real-time validation - remove error when user starts typing
+const fields = ["lastname", "firstname", "middlename", "sex", "studentid", "birthdate", "course", "year", "height", "weight", "email", "password", "confirmPassword"];
+
+fields.forEach(field => {
+    const element = document.getElementById(field);
+    if(element) {
+        element.addEventListener('input', function() {
+            this.classList.remove('error');
+            const errorDiv = document.getElementById(field + '-error');
+            if(errorDiv) errorDiv.classList.remove('show');
+
+            // Check password validation on input
+            if(field === "password") {
+                validatePassword();
+            }
+            // Check confirm password match on input
+            if(field === "confirmPassword") {
+                validateConfirmPassword();
+            }
+        });
+
+        element.addEventListener('change', function() {
+            this.classList.remove('error');
+            const errorDiv = document.getElementById(field + '-error');
+            if(errorDiv) errorDiv.classList.remove('show');
+        });
+    }
+});
+
+// Password validation function
+function validatePassword() {
+    const password = document.getElementById('password').value;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+
+    // Update requirement indicators
+    const reqUppercase = document.getElementById('req-uppercase');
+    const reqLowercase = document.getElementById('req-lowercase');
+    const reqNumber = document.getElementById('req-number');
+
+    if(hasUppercase) reqUppercase.classList.add('met');
+    else reqUppercase.classList.remove('met');
+
+    if(hasLowercase) reqLowercase.classList.add('met');
+    else reqLowercase.classList.remove('met');
+
+    if(hasNumber) reqNumber.classList.add('met');
+    else reqNumber.classList.remove('met');
+
+    return hasUppercase && hasLowercase && hasNumber;
+}
+
+// Confirm password validation function
+function validateConfirmPassword() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const confirmInput = document.getElementById('confirmPassword');
+    const errorDiv = document.getElementById('confirmPassword-error');
+
+    if(confirmPassword === '') return false;
+
+    if(password !== confirmPassword) {
+        confirmInput.classList.add('error');
+        if(errorDiv) errorDiv.classList.add('show');
+        return false;
+    } else {
+        confirmInput.classList.remove('error');
+        confirmInput.classList.add('success');
+        if(errorDiv) errorDiv.classList.remove('show');
+        return true;
+    }
+}
+
+// Age validation function
+function validateAge() {
+    const birthdateInput = document.getElementById('birthdate');
+    const ageDisplay = document.getElementById('ageDisplay');
+    const birthdateError = document.getElementById('birthdate-error');
+    const birthdate = new Date(birthdateInput.value);
+    const today = new Date();
+
+    if (!birthdateInput.value) { 
+        ageDisplay.style.display = 'none'; 
+        birthdateError.classList.remove('show');
+        return false; 
+    }
+
+    let age = today.getFullYear() - birthdate.getFullYear();
+    const m = today.getMonth() - birthdate.getMonth();
+    if(m<0 || (m===0 && today.getDate()<birthdate.getDate())) age--;
+
+    ageDisplay.style.display = 'block';
+
+    if(age<18 || age>40){
+        ageDisplay.textContent = `Age: ${age} years old (Allowed: 18 - 40 only)`;
+        ageDisplay.classList.add('invalid');
+        birthdateInput.classList.add('error');
+        birthdateError.classList.add('show');
+        return false;
+    } else {
+        ageDisplay.textContent = `Age: ${age} years old ✓`;
+        ageDisplay.classList.remove('invalid');
+        birthdateInput.classList.remove('error');
+        birthdateInput.classList.add('success');
+        birthdateError.classList.remove('show');
+        return true;
+    }
+}
+
+function register(){
+    let fields = ["lastname","firstname","middlename","sex","studentid","birthdate","course","year","contact","height","weight","email","password","confirmPassword"];
+    let valid = true;
+
+    // Hide all error messages first
+    document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('input, select').forEach(el => el.classList.remove('error'));
+
+    // Validate each field
+    fields.forEach(function(id){
+        let input = document.getElementById(id);
+        let errorDiv = document.getElementById(id + '-error');
+
+        if(input.value===""){ 
+            input.classList.add("error"); 
+            if(errorDiv) errorDiv.classList.add('show');
+            valid=false; 
+        } else { 
+            input.classList.remove("error"); 
+            if(errorDiv) errorDiv.classList.remove('show');
+        }
+    });
+
+    // Validate age (18-40)
+    if(!validateAge()){ 
+        valid=false; 
+        // Error already shown inline by validateAge()
+    }
+
+    // Check if Student ID already exists
+    let studentId = document.getElementById("studentid").value.trim();
+    let storedAccounts = JSON.parse(localStorage.getItem("studentAccounts")) || [];
+    let existingId = storedAccounts.find(acc => acc.studentid === studentId);
+
+    if(existingId){
+        document.getElementById("studentid").classList.add("error");
+        document.getElementById('studentid-duplicate-error').classList.add('show');
+        document.getElementById('studentid-error').classList.remove('show');
+        valid = false;
+    } else {
+        document.getElementById('studentid-duplicate-error').classList.remove('show');
+    }
+
+    // Validate password requirements
+    if(!validatePassword()) {
+        document.getElementById("password").classList.add("error");
+        document.getElementById('password-error').textContent = "Password must include uppercase, lowercase, and number";
+        document.getElementById('password-error').classList.add('show');
+        valid = false;
+    }
+
+    // Validate password match
+    if(!validateConfirmPassword()) {
+        document.getElementById("confirmPassword").classList.add("error");
+        document.getElementById('confirmPassword-error').classList.add('show');
+        valid = false;
+    }
+
+    if(!valid){ 
+        // Scroll to first error
+        const firstError = document.querySelector('.error');
+        if(firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+        return; 
+    }
+
+    // All validations passed - proceed with registration
+    let student = {
+        studentid: studentId,
+        lastname: document.getElementById("lastname").value,
+        firstname: document.getElementById("firstname").value,
+        middlename: document.getElementById("middlename").value,
+        sex: document.getElementById("sex").value,
+        birthdate: document.getElementById("birthdate").value,
+        course: document.getElementById("course").value,
+        year: document.getElementById("year").value,
+        contact: document.getElementById("contact").value,
+        height: document.getElementById("height").value,
+        weight: document.getElementById("weight").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+    };
+
+    storedAccounts.push(student);
+    localStorage.setItem("studentAccounts", JSON.stringify(storedAccounts));
+
+    // Show success banner instead of alert
+    const successBanner = document.getElementById('successBanner');
+    successBanner.classList.add('show');
+
+    // Disable button to prevent double submission
+    document.getElementById('registerBtn').disabled = true;
+    document.getElementById('registerBtn').textContent = 'Registered!';
+    document.getElementById('registerBtn').style.opacity = '0.7';
+
+    // Scroll to top to show success message
+    document.querySelector('.container').scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Auto redirect after 2 seconds
+    setTimeout(function() {
+        window.location.href = "student-login.html";
+    }, 2000);
+}
+
+function login(){ window.location.href = "student-login.html"; }
+
+</script>
+</body>
+</html>
